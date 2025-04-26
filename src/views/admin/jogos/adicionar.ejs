@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <%- include('../../partials/admin/head', { pageTitle: 'Adicionar Jogo' }) %>
+    <style>
+        .form-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .form-col {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .team-input-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .team-logo-preview {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+            padding: 3px;
+        }
+        
+        .team-logo-placeholder {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--light-3);
+        }
+        
+        .vs-separator {
+            text-align: center;
+            font-weight: bold;
+            color: var(--light-2);
+            margin: 20px 0;
+            font-size: 1.2em;
+        }
+        
+        .logo-upload {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .logo-upload-label {
+            font-size: 0.8em;
+            color: var(--light-3);
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <%- include('../../partials/admin/sidebar', { activePage: 'jogos' }) %>
+        
+        <main class="main-content">
+            <header class="content-header">
+                <h1><i class="fas fa-plus-circle"></i> Adicionar Jogo</h1>
+                <p class="breadcrumb">Jogos / Adicionar</p>
+            </header>
+
+            <% if (success) { %>
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle"></i> <%= success %>
+                </div>
+            <% } %>
+            
+            <% if (error) { %>
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-circle"></i> <%= error %>
+                </div>
+            <% } %>
+
+            <section class="content-body">
+                <div class="form-container">
+                    <form action="/admin/jogos/adicionar" method="POST" enctype="multipart/form-data">
+                        <div class="form-row">
+                            <div class="form-col">
+                                <div class="form-group">
+                                    <label for="competicao">Competição*</label>
+                                    <select class="form-control" id="competicao" name="competicao" required>
+                                        <option value="">Selecione uma competição</option>
+                                        <% competicoes.forEach(competicao => { %>
+                                            <option value="<%= competicao.id %>"><%= competicao.nome %></option>
+                                        <% }); %>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-col">
+                                <div class="form-group">
+                                    <label for="rodada">Rodada*</label>
+                                    <input type="number" class="form-control" id="rodada" name="rodada" min="1" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Time da Casa -->
+                        <div class="form-group">
+                            <label>Time da Casa*</label>
+                            <div class="team-input-container">
+                                <div id="timeCasaPreview" class="team-logo-placeholder">
+                                    <i class="fas fa-shield-alt"></i>
+                                </div>
+                                <div style="flex: 1;">
+                                    <input type="text" class="form-control" id="time_casa_nome" name="time_casa_nome" placeholder="Nome do time" required>
+                                    <div class="logo-upload">
+                                        <p></p>
+                                        <input type="text" class="form-control"  id="time_casa_imagem" name="time_casa_imagem" placeholder="URL do time">
+                                        <label class="logo-upload-label">Logo do Time (Opcional)</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="vs-separator">VS</div>
+
+                        <!-- Time Visitante -->
+                        <div class="form-group">
+                            <label>Time Visitante*</label>
+                            <div class="team-input-container">
+                                <div id="timeVisitantePreview" class="team-logo-placeholder">
+                                    <i class="fas fa-shield-alt"></i>
+                                </div>
+                                <div style="flex: 1;">
+                                    <input type="text" class="form-control" id="time_visitante_nome" name="time_visitante_nome" placeholder="Nome do time" required>
+                                    <div class="logo-upload">
+                                        <p></p>
+                                        <input type="text" class="form-control"  id="time_visitante_imagem"  name="time_visitante_imagem" placeholder="URL do time">
+                                        <label class="logo-upload-label">Logo do Time (Opcional)</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-col">
+                                <div class="form-group">
+                                    <label for="data">Data*</label>
+                                    <input type="date" class="form-control" id="data" name="data" required>
+                                </div>
+                            </div>
+                            <div class="form-col">
+                                <div class="form-group">
+                                    <label for="hora">Hora*</label>
+                                    <input type="time" class="form-control" id="hora" name="hora" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Canais de Transmissão -->
+                        <div class="form-row">
+                            <div class="form-col">
+                                <div class="form-group">
+                                    <label for="canal_principal">Canal Principal</label>
+                                    <select class="form-control" id="canal_principal" name="canal_principal">
+                                        <option value="">Selecione um canal</option>
+                                        <% canais.forEach(canal => { %>
+                                            <option value="<%= canal.id %>"><%= canal.name %></option>
+                                        <% }); %>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-col">
+                                <div class="form-group">
+                                    <label for="canal_alternativo">Canal Alternativo</label>
+                                    <select class="form-control" id="canal_alternativo" name="canal_alternativo">
+                                        <option value="">Selecione um canal</option>
+                                        <% canais.forEach(canal => { %>
+                                            <option value="<%= canal.id %>"><%= canal.name %></option>
+                                        <% }); %>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="link_partida">Link da Partida</label>
+                            <input type="url" class="form-control" id="link_partida" name="link_partida" placeholder="https://...">
+                        </div>
+
+                        <div class="form-group">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="destaque" name="destaque">
+                                <label class="form-check-label" for="destaque">
+                                    Destacar esta partida
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Salvar Jogo
+                            </button>
+                            <a href="/admin/jogos" class="btn btn-cancel">
+                                <i class="fas fa-times"></i> Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+
+        // Função para atualizar o preview da imagem a partir de uma URL
+        function updateImagePreview(inputId, previewId) {
+            const input = document.getElementById(inputId);
+            const preview = document.getElementById(previewId);
+            
+            input.addEventListener('input', function(e) {
+                const url = this.value.trim();
+                
+                // Verifica se é uma URL válida (básica)
+                if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
+                    // Cria uma imagem temporária para testar se a URL é válida
+                    const tempImg = new Image();
+                    tempImg.onload = function() {
+                        // Se carregar com sucesso, atualiza o preview
+                        if (preview.classList.contains('team-logo-placeholder')) {
+                            preview.outerHTML = `<img id="${previewId}" src="${url}" class="team-logo-preview">`;
+                        } else {
+                            preview.src = url;
+                        }
+                    };
+                    tempImg.onerror = function() {
+                        // Se der erro, mantém o placeholder
+                        if (!preview.classList.contains('team-logo-placeholder')) {
+                            preview.outerHTML = `<div id="${previewId}" class="team-logo-placeholder"><i class="fas fa-shield-alt"></i></div>`;
+                        }
+                    };
+                    tempImg.src = url;
+                } else if (!url) {
+                    // Se o campo estiver vazio, volta ao placeholder
+                    if (!preview.classList.contains('team-logo-placeholder')) {
+                        preview.outerHTML = `<div id="${previewId}" class="team-logo-placeholder"><i class="fas fa-shield-alt"></i></div>`;
+                    }
+                }
+            });
+        }
+
+    // Aplica a função para ambos os times
+    document.addEventListener('DOMContentLoaded', function() {
+        // Configura os previews para as URLs
+        updateImagePreview('time_casa_imagem', 'timeCasaPreview');
+        updateImagePreview('time_visitante_imagem', 'timeVisitantePreview');
+        
+        // Preencher data atual como padrão
+        const today = new Date();
+        const dateStr = today.toISOString().split('T')[0];
+        document.getElementById('data').value = dateStr;
+    });
+
+    // Validar para não ter times com nomes iguais
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const timeCasa = document.getElementById('time_casa_nome').value.trim();
+        const timeVisitante = document.getElementById('time_visitante_nome').value.trim();
+        
+        if (timeCasa && timeVisitante && timeCasa.toLowerCase() === timeVisitante.toLowerCase()) {
+            e.preventDefault();
+            alert('Os times não podem ter o mesmo nome!');
+        }
+    });
+
+        // Validar para não ter times com nomes iguais
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const timeCasa = document.getElementById('time_casa_nome').value.trim();
+            const timeVisitante = document.getElementById('time_visitante_nome').value.trim();
+            
+            if (timeCasa && timeVisitante && timeCasa.toLowerCase() === timeVisitante.toLowerCase()) {
+                e.preventDefault();
+                alert('Os times não podem ter o mesmo nome!');
+            }
+        });
+
+        // Preencher data atual como padrão
+        document.addEventListener('DOMContentLoaded', function() {
+            const today = new Date();
+            const dateStr = today.toISOString().split('T')[0];
+            document.getElementById('data').value = dateStr;
+        });
+    </script>
+</body>
+</html>

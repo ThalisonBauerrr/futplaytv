@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SportStream Pro - HOME</title>
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/home/navigation.css">
+  <link rel="icon" href="/assets/favicon.ico" type="image/x-icon">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <style>
+.game-vs {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 1.2rem;
+}
+
+.live-match {
+  color: #020202;
+  font-weight: bold;
+  animation: pulse 1.5s infinite;
+}
+
+.score {
+  font-size: 1.4rem;
+}
+
+.match-time {
+  background: #ff0000;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.8rem;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.7; }
+  100% { opacity: 1; }
+}
+  </style>
+  <%- include('../partials/header') %>
+  <%- include('../partials/navigation', {qrCodeBase64: qrCodeBase64}) %>
+  
+  <main>
+    <h1 class="page-title">Jogos ao Vivo</h1>
+    
+    <div class="games-grid">
+
+
+      <% if (jogos.length > 0) { %>
+        <% jogos.forEach(jogo => { %>
+          <!-- Jogo 1 - Destaque -->
+          <div class="game-card">
+            <img src="/assets/banner.jpg" alt="Banner do Jogo" class="game-banner">
+            <div class="live-badge">
+
+                <% if (jogo.status === 'ao-vivo') { %>
+                  <span style="color: #67fc62;">AO VIVO <%= jogo.tempo %></span>
+                <% } else if (jogo.status === 'intervalo') { %>
+                  <span style="color: #ec6307;"><%= jogo.tempo %></span>
+                <% } else { %>
+                  <span style="color: #ffffff;"><%= jogo.tempo %></span>
+                <% } %>
+      
+              
+            </div>
+            <div class="game-content">
+              <div class="game-teams">
+                <!-- Time da Casa -->
+                <div class="game-team">
+                  <img src="<%= jogo.time_casa_imagem %>" alt="<%= jogo.time_casa %>" class="game-team-logo">
+                  <span><%= jogo.time_casa_nome %></span>
+                </div>
+      
+                  <% if (jogo.status === 'ao-vivo' || jogo.status === 'intervalo' ) { %>
+                    <div class="game-vs live-match">
+                      <span class="score home-score"><%= jogo.placar_casa %></span>
+                      <span class="vs">VS</span>
+                      <span class="score away-score"><%= jogo.placar_visitante%></span>
+                    </div>
+                  <% } else { %>
+                    <div class="game-vs live-match">
+                      <span class="vs">VS</span>
+                    </div>
+                  <% } %>
+      
+                <!-- Time Visitante -->
+                <div class="game-team">
+                  <img src="<%= jogo.time_visitante_imagem %>" alt="<%= jogo.time_visitante %>" class="game-team-logo">
+                  <span><%= jogo.time_visitante_nome %></span>
+                </div>
+              </div>
+              
+              <div class="game-info">
+                <!-- Data e Hora do Jogo -->
+                <div class="game-info-item">
+                  <i class="far fa-calendar-alt"></i>
+                  <span>Hoje - <%= jogo.hora%> (Brasília)</span>
+                </div>
+                
+                <!-- Competição -->
+                <div class="game-info-item">
+                  <i class="fas fa-trophy"></i>
+                  <span><%= jogo.competicao %> - <%= jogo.rodada %>ª Rodada</span>
+                </div>
+                
+                <div class="game-info-item">
+                  <i class="fas fa-tv"></i>
+                  <span>
+                    <% if (jogo.transmissoes && jogo.transmissoes.length > 0) { %>
+                      <%= jogo.transmissoes.join(', ') %>
+                    <% } else { %>
+                      Não disponível
+                    <% } %>
+                  </span>
+                </div>
+              </div>
+              <!-- Botão Assistir Agora -->
+              <a href="/player/<%= jogo.id %>"  class="watch-btn">
+                <i class="fas fa-play"></i> Assistir Agora
+              </a>
+            </div>
+          </div>
+        <% }); %>
+      <% } else { %>
+        <p>Nenhum jogo encontrado para hoje.</p>
+      <% } %>
+
+    
+    </div>
+  </main>
+  
+  <%- include('../partials/footer') %>
+  <script>
+    console.log('<%= tempoFim %>')
+    function updateSimpleTimer() {
+      const endTime = new Date('<%= tempoFim %>');
+      const now = new Date();
+      let remaining = Math.max(0, endTime - now);
+    
+      const mins = Math.floor(remaining / 60000);
+      const secs = Math.floor((remaining % 60000) / 1000);
+    
+      document.getElementById('simple-minutes').textContent = mins.toString().padStart(2, '0');
+      document.getElementById('simple-seconds').textContent = secs.toString().padStart(2, '0');
+    
+      if (remaining > 0) {
+        setTimeout(updateSimpleTimer, 1000);
+      }
+    }
+    
+    updateSimpleTimer();
+    </script>
+  <script src="/js/script.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Assistir Jogo - SportStream Pro</title>
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/home/navigation.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    /* Estilos personalizados para o player */
+    .player-container {
+      display: grid;
+      grid-template-columns: 1fr 350px;
+      gap: 2rem;
+    }
+    
+    .video-main {
+      width: 100%;
+    }
+    
+    .video-player {
+      width: 100%;
+      aspect-ratio: 16/9;
+      background: #000;
+      border-radius: 12px;
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    }
+    
+    .player-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+    
+    .match-teams {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    
+    .team {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .team-logo {
+      width: 40px;
+      height: 40px;
+    }
+    
+    .vs {
+      font-weight: bold;
+      color: var(--accent-primary);
+      margin: 0 0.5rem;
+    }
+    
+    .match-score {
+      background: var(--accent-primary);
+      color: var(--bg-darker);
+      padding: 0.25rem 0.75rem;
+      border-radius: 4px;
+      font-weight: bold;
+    }
+    
+    /* Sidebar direita com jogos */
+    .live-games-sidebar {
+      background: var(--bg-light);
+      padding: 1.5rem;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      height: fit-content;
+    }
+    
+    .sidebar-title {
+      color: var(--accent-primary);
+      margin-bottom: 1.5rem;
+      font-size: 1.2rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .sidebar-title i {
+      font-size: 1rem;
+    }
+    
+    /* Cards de jogos ao vivo */
+    .live-game-card {
+      background: var(--bg-darker);
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      transition: all 0.3s ease;
+    }
+    
+    .live-game-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(0, 255, 136, 0.1);
+    }
+    
+    .game-teams-small {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+    }
+    
+    .team-small {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex: 1;
+    }
+    
+    .team-logo-small {
+      width: 24px;
+      height: 24px;
+    }
+    
+    .vs-small {
+      font-weight: bold;
+      color: var(--accent-primary);
+      margin: 0 0.5rem;
+      font-size: 0.8rem;
+    }
+    
+    .game-score {
+      font-weight: bold;
+      font-size: 0.9rem;
+    }
+    
+    .game-status {
+      font-size: 0.75rem;
+      color: var(--accent-primary);
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+    
+    .game-status.live {
+      color: #ff5555;
+    }
+    
+    .game-status.live::before {
+      content: '';
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      background: #ff5555;
+      border-radius: 50%;
+      margin-right: 0.25rem;
+      animation: pulse 1.5s infinite;
+    }
+    
+    .watch-btn-small {
+      display: block;
+      width: 100%;
+      padding: 0.5rem;
+      background: var(--accent-primary);
+      color: var(--bg-darker);
+      border: none;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+    }
+    
+    .watch-btn-small:hover {
+      background: #00e676;
+      transform: translateY(-2px);
+    }
+    
+    /* Informações do jogo principal */
+    .player-info {
+      margin-top: 2rem;
+    }
+    
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    
+    .info-item {
+      background: var(--bg-light);
+      padding: 0.75rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    .info-label {
+      color: var(--text-secondary);
+      font-size: 0.75rem;
+      margin-bottom: 0.25rem;
+    }
+    
+    /* Responsividade */
+    @media (max-width: 992px) {
+      .player-container {
+        grid-template-columns: 1fr;
+      }
+      
+      .live-games-sidebar {
+        margin-top: 2rem;
+      }
+    }
+    
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.5; }
+      100% { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <%- include('../partials/header') %>
+  <%- include('../partials/navigation', {qrCodeBase64: qrCodeBase64}) %>
+  
+  <main>
+    <% if (jogo) { %>
+    <h1 class="page-title">Transmissão Ao Vivo</h1>
+    
+    <div class="player-container">
+      <!-- Conteúdo principal com o player -->
+      <div class="video-main">
+        <div class="player-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 1rem;">
+          <div class="match-teams" style="display: flex; align-items: center; justify-content: center; width: 100%; gap: 20px;">
+           
+      <!-- Time da casa -->
+      <div class="team home-team" style="display: flex; align-items: center; justify-content: flex-end; max-width: 35%; flex: 1;">
+        <img src="<%= jogo.time_casa_logo %>" alt="<%= jogo.time_casa %>" class="team-logo" style="width: 48px; height: 48px; margin-right: 10px;" id="logo-casa-<%= jogo.id %>">
+        <span style="font-weight: bold; text-align: right; white-space: nowrap;" id="nome-casa-<%= jogo.id %>"><%= jogo.time_casa %></span>
+      </div>
+
+      <!-- Placar centralizado -->
+      <div style="display: flex; flex-direction: column; align-items: center; min-width: 120px;">
+        <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.25rem;">AO VIVO</div>
+        <div style="background: var(--accent-primary); color: var(--bg-darker); padding: 0.25rem 1.5rem; border-radius: 20px; font-weight: bold; font-size: 1.25rem; text-align: center;" id="placar-<%= jogo.id %>">
+          <%= jogo.placar_casa %> - <%= jogo.placar_visitante %>
+        </div>
+        <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem;" id="tempo-<%= jogo.id %>"><%= jogo.tempo %></div>
+      </div>
+
+      <!-- Time visitante -->
+      <div class="team away-team" style="display: flex; align-items: center; justify-content: flex-start; max-width: 35%; flex: 1;">
+        <span style="font-weight: bold; text-align: left; margin-right: 10px;" id="nome-visitante-<%= jogo.id %>"><%= jogo.time_visitante %></span>
+        <img src="<%= jogo.time_visitante_logo %>" alt="<%= jogo.time_visitante %>" class="team-logo" style="width: 48px; height: 48px;" id="logo-visitante-<%= jogo.id %>">
+      </div>
+      <div id="game-id-<%= jogo.id %>" style="display: none;"><%= jogo.id %></div>
+
+      </div>
+
+        </div>
+
+        <div class="video-player stream-container">
+          <!-- O iframe começa com a primeira URL do primeiro canal -->
+          <iframe 
+            id="stream-iframe"
+            src="<%= urls[0].url %>"
+            sandbox="allow-scripts allow-same-origin allow-presentation"
+            allow="fullscreen; encrypted-media; autoplay"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allowfullscreen 
+            frameborder="0">
+          </iframe>
+        </div>
+        
+        <!-- Overlay para capturar eventos -->
+        <div class="player-overlay" id="player-overlay"></div>
+        
+        <div style="margin-top: 20px;">
+          <% if (urls && urls.length > 0) { %> <!-- Verifica se urls existe e é um array -->
+            <div class="channel-buttons">
+              <!-- Canal Principal -->
+              <button class="channel-btn active" id="main-channel-btn" data-channel="<%= urls[0].url %>">
+                <i class="fas fa-satellite-dish"></i> <%= urls[0].name %>
+              </button>
+              <button class="channel-btn" id="main-channel-btn" data-channel="<%= urls[0].url_alternative %>">
+                <i class="fas fa-satellite-dish"></i> <%= urls[0].name %> Alternativo
+              </button>
+              <!-- Canal Alternativo -->
+              <% if (urls.length > 1) { %>
+                <button class="channel-btn" id="alt-channel-btn" data-channel="<%= urls[1].url %>">
+                  <i class="fas fa-satellite"></i>  <%= urls[1].name %>
+                </button>
+                <button class="channel-btn" id="alt-channel-btn" data-channel="<%= urls[1].urlurl_alternative %>">
+                  <i class="fas fa-satellite"></i>  <%= urls[1].name %> Alternativo
+                </button>
+              <% } %>
+            </div>
+          <% } else { %>
+            <p>Nenhum canal disponível para transmissão.</p>
+          <% } %>
+        </div>
+        
+        
+        
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/js/all.min.js"></script>
+        
+        <div class="player-info">
+          <h2 class="player-info-title">
+            <i class="fas fa-info-circle"></i>
+            Informações da Partida
+          </h2>
+          
+          <div class="info-grid">
+            <div class="info-item">
+              <div class="info-label">Árbitro</div>
+              <div>Wilton Sampaio</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Estádio</div>
+              <div>Maracanã</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Público</div>
+              <div>62.345</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Cartões</div>
+              <div>
+                <span style="color: #ffeb3b"><i class="fas fa-square"></i> 3</span> | 
+                <span style="color: #f44336"><i class="fas fa-square"></i> 0</span>
+              </div>
+            </div>
+          </div>
+          
+          <h2 class="player-info-title" style="margin-top: 1.5rem;">
+            <i class="fas fa-history"></i>
+            Histórico da Partida
+          </h2>
+          
+          <div style="background: var(--bg-light); padding: 1rem; border-radius: 8px; margin-top: 1rem;">
+            <div style="display: flex; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+              <div style="color: var(--accent-primary); width: 50px; font-weight: bold;">23'</div>
+              <div>⚽ Gol do Flamengo - Gabriel Barbosa</div>
+            </div>
+            <div style="display: flex; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+              <div style="color: var(--accent-primary); width: 50px; font-weight: bold;">35'</div>
+              <div>⚽ Gol do Palmeiras - Raphael Veiga (pênalti)</div>
+            </div>
+            <div style="display: flex; align-items: center; padding: 0.5rem 0;">
+              <div style="color: var(--accent-primary); width: 50px; font-weight: bold;">52'</div>
+              <div>⚽ Gol do Flamengo - Giorgian De Arrascaeta</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Sidebar direita com jogos em andamento -->
+      <div class="live-games-sidebar">
+        <h2 class="sidebar-title">
+          <i class="fas fa-tv"></i>
+          Jogos Ao Vivo
+        </h2>
+        
+
+        <div id="games-list">
+          <% jogos.forEach(function(jogo) { %>
+            <div class="live-game-card" id="game-<%= jogo.id %>">
+              <div class="game-status <%= jogo.status === 'ao-vivo' ? 'live' : '' %>">
+                AO VIVO - <%= jogo.tempo %>
+              </div>
+              <div class="game-teams-small">
+                <div class="team-small">
+                  <img src="<%= jogo.time_casa_imagem %>" alt="<%= jogo.time_casa_nome %>" class="team-logo-small">
+                  <span><%= jogo.time_casa_nome %></span>
+                </div>
+                <span class="vs-small">VS</span>
+                <div class="team-small" style="justify-content: flex-end;">
+                  <span><%= jogo.time_visitante_nome %></span>
+                  <img src="<%= jogo.time_visitante_imagem %>" alt="<%= jogo.time_visitante_nome %>" class="team-logo-small">
+                </div>
+              </div>
+              <div class="game-score" style="text-align: center; margin-bottom: 0.75rem;">
+                <%= jogo.placar_casa %> - <%= jogo.placar_visitante %>
+              </div>
+              <a href="/player/<%= jogo.id %>" class="watch-btn-small">
+                <i class="fas fa-play"></i> Assistir
+              </a>
+            </div>
+          <% }); %>
+        </div>
+      
+
+        <div style="text-align: center; margin-top: 1.5rem;">
+          <a href="/home/" style="color: var(--accent-primary); font-size: 0.9rem; text-decoration: none;">
+            <i class="fas fa-plus-circle"></i> Ver todos os jogos
+          </a>
+        </div>
+      </div>
+    </div>
+    <% } else { %>
+      <p>Jogo não encontrado.</p>
+    <% } %>
+  </main>
+  
+  <%- include('../partials/footer') %>
+  <div id="qr-code-data" 
+     data-qrcode="<%= qrCodeBase64 %>" 
+     style="display: none;">
+</div>
+
+  <script src="/js/live.js"></script>
+  <script>
+// Seleciona todos os botões e o iframe
+const iframe = document.getElementById('stream-iframe');
+  const buttons = document.querySelectorAll('.channel-btn');
+
+  // Função para alterar o iframe com a URL do canal selecionado
+  function changeChannel(url) {
+    iframe.src = url;
+  }
+
+  // Função para alterar o estado ativo dos botões
+  function setActiveButton(index) {
+    buttons.forEach((button, i) => {
+      if (i === index) {
+        button.classList.add('active');
+      } else {
+        button.classList.remove('active');
+      }
+    });
+  }
+
+  // Event listeners para os botões
+  buttons.forEach((button, index) => {
+    button.addEventListener('click', () => {
+      const url = button.getAttribute('data-channel');
+      changeChannel(url);
+      setActiveButton(index);  // Atualiza a classe 'active' no botão
+    });
+  });
+    function updateSimpleTimer() {
+      const endTime = new Date('<%= tempoFim %>');
+      const now = new Date();
+      let remaining = Math.max(0, endTime - now);
+    
+      const mins = Math.floor(remaining / 60000);
+      const secs = Math.floor((remaining % 60000) / 1000);
+    
+      document.getElementById('simple-minutes').textContent = mins.toString().padStart(2, '0');
+      document.getElementById('simple-seconds').textContent = secs.toString().padStart(2, '0');
+    
+      if (remaining > 0) {
+        setTimeout(updateSimpleTimer, 1000);
+      }
+    }
+    
+    updateSimpleTimer();
+     // Função para fazer requisição Ajax e atualizar os dados
+  function atualizarJogos() {
+    fetch('/atualizar-jogos') // Rota para pegar os dados atualizados
+      .then(response => response.json())
+      .then(data => {
+        // Limpar a lista de jogos
+        const gamesList = document.getElementById("games-list");
+        gamesList.innerHTML = '';
+
+        // Atualizar a lista com os jogos novos
+        data.jogos.forEach(jogo => {
+          const gameElement = document.createElement('div');
+          gameElement.classList.add('live-game-card');
+          gameElement.innerHTML = `
+            <div class="game-status ${jogo.status === 'ao-vivo' ? 'live' : ''}">
+              AO VIVO - ${jogo.tempo}
+            </div>
+            <div class="game-teams-small">
+              <div class="team-small">
+                <img src="${jogo.time_casa_imagem}" alt="${jogo.time_casa_nome}" class="team-logo-small">
+                <span>${jogo.time_casa_nome}</span>
+              </div>
+              <span class="vs-small">VS</span>
+              <div class="team-small" style="justify-content: flex-end;">
+                <span>${jogo.time_visitante_nome}</span>
+                <img src="${jogo.time_visitante_imagem}" alt="${jogo.time_visitante_nome}" class="team-logo-small">
+              </div>
+            </div>
+            <div class="game-score" style="text-align: center; margin-bottom: 0.75rem;">
+              ${jogo.placar_casa} - ${jogo.placar_visitante}
+            </div>
+            <a href="/player/${jogo.id}" class="watch-btn-small">
+              <i class="fas fa-play"></i> Assistir
+            </a>
+          `;
+          gamesList.appendChild(gameElement);
+        });
+      })
+      .catch(error => console.error('Erro ao atualizar jogos:', error));
+  }
+
+  // Atualizar os jogos a cada 1 minuto (60000 milissegundos)
+  setInterval(atualizarJogos, 60000);
+
+
+  // Garantindo que o jogoId seja atribuído corretamente no JavaScript
+  // Atribuindo o ID do jogo no formato correto para JavaScript
+  const jogoId = "<%= jogo.id %>";  // Passando o ID como string, com aspas ao redor
+
+  // Função para atualizar o placar e o tempo do jogo
+  function atualizarPlacarETempo(jogoId) {
+    // Faz uma requisição para o backend para buscar os dados atualizados do jogo
+    fetch(`/atualizar-jogo/${jogoId}`)
+      .then(response => response.json())
+      .then(data => {
+        const jogo = data.jogo;
+
+        // Atualiza o placar
+        const placar = document.getElementById(`placar-${jogoId}`);
+        if (placar) {
+          placar.textContent = `${jogo.placar_casa} - ${jogo.placar_visitante}`;
+        }
+
+        // Atualiza o tempo
+        const tempo = document.getElementById(`tempo-${jogoId}`);
+        if (tempo) {
+          tempo.textContent = jogo.tempo;
+        }
+      })
+      .catch(error => console.error('Erro ao atualizar o placar e o tempo:', error));
+  }
+
+  // Função para iniciar a atualização do placar e do tempo a cada 1 minuto (60000 milissegundos)
+  function iniciarAtualizacao(jogoId) {
+    setInterval(() => {
+      atualizarPlacarETempo(jogoId);  // Atualiza o placar e o tempo do jogo com o ID fornecido
+    }, 60000);  // Atualiza a cada 1 minuto
+  }
+
+  // Inicia a atualização do jogo com o ID correspondente
+  iniciarAtualizacao(jogoId);  // Chama a função para iniciar a atualização a cada 1 minuto
+  </script>
+</body>
+</html>

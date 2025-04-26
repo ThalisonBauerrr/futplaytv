@@ -1,0 +1,22 @@
+<nav class="sidebar">
+    <div class="sidebar-header">
+        <h2><i class="fas fa-sliders-h"></i> Painel Admin</h2>
+    </div>
+    <ul class="sidebar-menu">
+        <li><a href="/admin/" class="<%= activePage === 'dashboard' ? 'active' : '' %>">
+            <i class="fas fa-tachometer-alt"></i> Dashboard
+        </a></li>
+        <li><a href="/admin/jogos" class="<%= activePage === 'jogos' ? 'active' : '' %>">
+            <i class="fas fa-play-circle"></i> Partidas
+        </a></li>
+        <li><a href="/admin/canais" class="<%= activePage === 'canais' ? 'active' : '' %>">
+            <i class="fas fa-broadcast-tower"></i> Canais
+        </a></li>
+        <li><a href="/admin/competicoes" class="<%= activePage === 'competicoes' ? 'active' : '' %>">
+            <i class="fas fa-trophy"></i> Competições
+        </a></li>
+        <li class="logout-link"><a href="/admin/logout">
+            <i class="fas fa-sign-out-alt"></i> Sair
+        </a></li>
+    </ul>
+</nav>

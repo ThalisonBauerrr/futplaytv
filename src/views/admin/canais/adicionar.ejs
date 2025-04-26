@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <%- include('../../partials/admin/head', { pageTitle: 'Adicionar Canal' }) %>
+    <style>
+        /* Estilos específicos para a página de adição */
+        .form-section {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 20px;
+            width: 100%;
+        }
+        
+        .form-col {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        @media (max-width: 768px) {
+            .form-row {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <%- include('../../partials/admin/sidebar', { activePage: 'canais' }) %>
+        
+        <main class="main-content">
+            <header class="content-header">
+                <h1><i class="fas fa-plus-circle"></i> Adicionar Canal</h1>
+                <p class="breadcrumb">Canais / Adicionar</p>
+            </header>
+
+            <% if (success) { %>
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle"></i> <%= success %>
+                </div>
+            <% } %>
+            
+            <% if (error) { %>
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-circle"></i> <%= error %>
+                </div>
+            <% } %>
+
+            <section class="content-body">
+                <div class="form-container">
+                    <form action="/admin/canais/adicionar" method="POST" enctype="multipart/form-data" class="form-section">
+                        <div class="form-row">
+                            <div class="form-col">
+                                <div class="form-group">
+                                    <label for="name">Nome do Canal*</label>
+                                    <input type="text" class="form-control" id="name" name="name" required>
+                                </div>
+                            </div>
+                            <div class="form-col">
+                                <div class="form-group">
+                                    <label for="active">Status*</label>
+                                    <select class="form-control" id="active" name="active" required>
+                                        <option value="1" selected>Ativo</option>
+                                        <option value="0">Inativo</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-col">
+                                <div class="form-group">
+                                    <label for="url">URL Principal*</label>
+                                    <input type="url" class="form-control" id="url" name="url" required>
+                                </div>
+                            </div>
+                            <div class="form-col">
+                                <div class="form-group">
+                                    <label for="url_alternative">URL Alternativa</label>
+                                    <input type="url" class="form-control" id="url_alternative" name="url_alternative">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="description">Descrição</label>
+                            <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Logo do Canal</label>
+                            <div class="file-upload-container">
+                                <div class="file-upload">
+                                    <input type="file" id="logo" name="logo" accept="image/*" style="display: none;">
+                                    <label for="logo" class="file-upload-label">
+                                        <i class="fas fa-cloud-upload-alt"></i> Selecionar Arquivo
+                                    </label>
+                                    <span class="file-name">Nenhum arquivo selecionado</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Salvar Canal
+                            </button>
+                            <a href="/admin/canais" class="btn btn-cancel">
+                                <i class="fas fa-times"></i> Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        // Mostrar nome do arquivo selecionado
+        document.getElementById('logo').addEventListener('change', function(e) {
+            const fileName = e.target.files[0] ? e.target.files[0].name : 'Nenhum arquivo selecionado';
+            document.querySelector('.file-name').textContent = fileName;
+        });
+    </script>
+</body>
+</html>

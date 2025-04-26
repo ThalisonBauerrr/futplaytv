@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <%- include('../partials/admin/head', { pageTitle: 'Gerenciar Jogos' }) %>
+    <style>
+        /* Estilos específicos para a página de jogos */
+        .team-display {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+        
+        .team-logo {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+            border-radius: 50%;
+            background-color: var(--dark-3);
+            padding: 2px;
+        }
+        
+        .team-name {
+            text-align: center;
+            font-size: 0.9em;
+            color: var(--light-1);
+        }
+        
+        .transmissoes-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .transmissoes-list li {
+            margin-bottom: 3px;
+            font-size: 0.9em;
+        }
+        
+        .link-partida {
+            display: inline-block;
+            max-width: 150px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            vertical-align: middle;
+            color: var(--primary-light);
+        }
+        
+        .btn-copiar {
+            background: none;
+            border: none;
+            color: var(--info-color);
+            cursor: pointer;
+            padding: 0 5px;
+            transition: color 0.2s;
+        }
+        
+        .btn-copiar:hover {
+            color: var(--primary-color);
+        }
+        
+        .badge-destaque {
+            background-color: var(--warning-color);
+            color: var(--dark-1);
+            padding: 3px 6px;
+            border-radius: 12px;
+            font-size: 0.75em;
+            font-weight: 600;
+            margin-left: 5px;
+        }
+        
+        .sortable {
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .sortable:hover {
+            background-color: var(--dark-3);
+        }
+        
+        .sort-icon {
+            margin-left: 5px;
+            font-size: 0.8em;
+        }
+        
+        .data-hora {
+            white-space: nowrap;
+        }
+        
+        .hora-jogo {
+            color: var(--light-3);
+            font-size: 0.9em;
+        }
+        
+        .btn-alerta {
+            background-color: var(--warning-color);
+            color: white;
+        }
+        
+        .btn-alerta:hover {
+            background-color: #e67e22;
+        }
+        
+        #rodadaInfo {
+            background-color: var(--dark-2);
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            border: 1px solid var(--dark-4);
+        }
+        
+        #rodadaInfo h3 {
+            color: var(--light-1);
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+        
+        #rodadaDetails {
+            color: var(--light-2);
+            font-size: 0.95em;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <%- include('../partials/admin/sidebar', { activePage: 'jogos' }) %>
+            <main class="main-content">
+                <header>
+                    <h1><%= pageTitle %></h1>
+                    <p>Bem-vindo ao Painel de Administração! Seu nível de acesso: <strong></strong></p>
+                </header>
+    
+                <section class="content-body">
+                    <h2>Conteúdo da Página</h2>
+                    <p>Aqui você pode gerenciar configurações do sistema, usuários e muito mais.</p>
+                </section>
+            </main>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+</body>
+</html>
+    

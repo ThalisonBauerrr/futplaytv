@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Canal - Painel Admin</title>
+    <link rel="stylesheet" href="/css/admin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Estilos específicos para a página de edição */
+        .form-container {
+            background-color: var(--darker-color);
+            border-radius: 8px;
+            padding: 25px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--secondary-color);
+            font-weight: 500;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            color: var(--light-color);
+            transition: all 0.3s;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            background-color: rgba(108, 92, 231, 0.1);
+        }
+        
+        .current-logo {
+            margin-top: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .logo-preview {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+            padding: 5px;
+        }
+        
+        .remove-logo-check {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--danger-color);
+            cursor: pointer;
+        }
+        
+        .file-upload {
+            margin-top: 10px;
+        }
+        
+        .file-upload-label {
+            display: inline-block;
+            padding: 10px 15px;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .file-upload-label:hover {
+            background-color: #5649c0;
+        }
+        
+        .file-name {
+            margin-left: 10px;
+            color: var(--secondary-color);
+            font-size: 0.9rem;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .btn {
+            padding: 12px 20px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #5649c0;
+        }
+        
+        .btn-cancel {
+            background-color: transparent;
+            color: var(--light-color);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .btn-cancel:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <%- include('../../partials/admin/sidebar', {activePage: 'canais'}) %>
+        
+        <main class="main-content">
+            <header class="content-header">
+                <h1><i class="fas fa-edit"></i> Editar Canal</h1>
+                <p class="breadcrumb">Canais / Editar / <%= canal.name %></p>
+            </header>
+
+            <% if (locals.success) { %>
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle"></i> <%= success %>
+                </div>
+            <% } %>
+            
+            <% if (locals.error) { %>
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-circle"></i> <%= error %>
+                </div>
+            <% } %>
+
+            <section class="content-body">
+                <div class="form-container">
+                    <form action="/admin/canais/editar/<%= canal.id %>" method="POST" enctype="multipart/form-data">
+                        <div class="form-group">
+                            <label for="name">Nome do Canal</label>
+                            <input type="text" class="form-control" id="name" name="name" value="<%= canal.name %>" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="url">URL Principal</label>
+                            <input type="url" class="form-control" id="url" name="url" value="<%= canal.url %>" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="url_alternative">URL Alternativa</label>
+                            <input type="url" class="form-control" id="url_alternative" name="url_alternative" value="<%= canal.url_alternative || '' %>">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Logo Atual</label>
+                            <% if (canal.logo) { %>
+                                <div class="current-logo">
+                                    <img src="<%= canal.logo %>" alt="Logo atual" class="logo-preview">
+                                    <label class="remove-logo-check">
+                                        <input type="checkbox" name="remove_logo"> Remover logo
+                                    </label>
+                                </div>
+                            <% } else { %>
+                                <p class="text-muted">Nenhum logo cadastrado</p>
+                            <% } %>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="logo">Novo Logo</label>
+                            <div class="file-upload">
+                                <input type="file" id="logo" name="logo" accept="image/*" style="display: none;">
+                                <label for="logo" class="file-upload-label">
+                                    <i class="fas fa-cloud-upload-alt"></i> Selecionar Arquivo
+                                </label>
+                                <span class="file-name">Nenhum arquivo selecionado</span>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="active">Status</label>
+                            <select class="form-control" id="active" name="active">
+                                <option value="1" <%= canal.active ? 'selected' : '' %>>Ativo</option>
+                                <option value="0" <%= !canal.active ? 'selected' : '' %>>Inativo</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Salvar Alterações
+                            </button>
+                            <a href="/admin/canais" class="btn btn-cancel">
+                                <i class="fas fa-times"></i> Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        // Mostrar nome do arquivo selecionado
+        document.getElementById('logo').addEventListener('change', function(e) {
+            const fileName = e.target.files[0] ? e.target.files[0].name : 'Nenhum arquivo selecionado';
+            document.querySelector('.file-name').textContent = fileName;
+        });
+        
+        // Desabilitar file input se remover logo estiver marcado
+        const removeLogoCheckbox = document.querySelector('input[name="remove_logo"]');
+        if (removeLogoCheckbox) {
+            removeLogoCheckbox.addEventListener('change', function(e) {
+                const fileInput = document.getElementById('logo');
+                fileInput.disabled = e.target.checked;
+                if (e.target.checked) {
+                    document.querySelector('.file-name').textContent = 'Nenhum arquivo selecionado';
+                    fileInput.value = '';
+                }
+            });
+        }
+    </script>
+</body>
+</html>

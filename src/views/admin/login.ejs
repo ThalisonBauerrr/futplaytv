@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Administração - Login</title>
+    <link rel="stylesheet" href="/css/admin.css"> <!-- Usando o mesmo CSS do admin -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Estilos específicos para a tela de login */
+        .login-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: var(--dark-1);
+            padding: 20px;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .login-header h1 {
+            color: var(--light-1);
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .login-form {
+            background-color: var(--dark-2);
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .login-form label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--light-2);
+            font-weight: 500;
+        }
+
+        .login-form input {
+            width: 100%;
+            padding: 12px 15px;
+            margin-bottom: 20px;
+            border: 1px solid var(--dark-4);
+            border-radius: 4px;
+            background-color: var(--dark-3);
+            color: var(--light-1);
+            font-size: 1rem;
+        }
+
+        .login-form input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .login-button {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .login-button:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .login-button i {
+            margin-right: 8px;
+        }
+
+        /* Mensagens de erro/sucesso */
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .alert-danger {
+            background-color: var(--danger-light);
+            color: var(--danger);
+            border: 1px solid var(--danger);
+        }
+
+        /* Responsividade */
+        @media (max-width: 480px) {
+            .login-form {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <header class="login-header">
+            <h1><i class="fas fa-lock"></i> Acesso Administrativo</h1>
+            <p>Entre com suas credenciais para acessar o painel</p>
+        </header>
+
+        <% if (error) { %>
+            <div class="alert alert-danger">
+              <i class="fas fa-exclamation-circle"></i> <%= error %>
+            </div>
+          <% } %>
+
+        <main>
+            <section class="login-form">
+                <form action="/admin/login" method="POST">
+                    <div class="form-group">
+                        <label for="login">
+                            <i class="fas fa-user"></i> Usuário
+                        </label>
+                        <input type="text" id="login" name="login" required placeholder="Digite seu usuário">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="senha">
+                            <i class="fas fa-lock"></i> Senha
+                        </label>
+                        <input type="password" id="senha" name="senha" required placeholder="Digite sua senha">
+                    </div>
+                    
+                    <button type="submit" class="login-button">
+                        <i class="fas fa-sign-in-alt"></i> Entrar
+                    </button>
+                </form>
+            </section>
+        </main>
+    </div>
+</body>
+</html>

@@ -1,0 +1,60 @@
+.simple-access-box {
+  background: #1a2636;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 20px;
+  text-align: center;
+  font-family: Arial, sans-serif;
+}
+
+.access-message {
+  color: #8e9eae;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.simple-timer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 15px;
+  gap: 5px;
+}
+
+.simple-time {
+  font-size: 28px;
+  font-weight: bold;
+  color: #4fc3f7;
+  min-width: 25px;
+}
+
+.simple-time-separator {
+  font-size: 28px;
+  color: #4fc3f7;
+}
+
+.simple-qr-section {
+  border-top: 1px solid #2a3a4a;
+  padding-top: 15px;
+}
+
+.simple-qr-title {
+  color: #8e9eae;
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+.simple-qr-code {
+  width: 140px;
+  height: 140px;
+  margin: 0 auto 10px;
+  display: block;
+}
+
+.simple-qr-text {
+  color: #8e9eae;
+  font-size: 13px;
+  margin-top: 5px;
+}
+
+

@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <%- include('../../partials/admin/head', { pageTitle: 'Gerenciar Jogos' }) %>
+    <style>
+        /* Estilos específicos para a página de jogos */
+        .team-display {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+        
+        .team-logo {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+            border-radius: 50%;
+            background-color: var(--dark-3);
+            padding: 2px;
+        }
+        
+        .team-name {
+            text-align: center;
+            font-size: 0.9em;
+            color: var(--light-1);
+        }
+        
+        .transmissoes-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .transmissoes-list li {
+            margin-bottom: 3px;
+            font-size: 0.9em;
+        }
+        
+        .link-partida {
+            display: inline-block;
+            max-width: 150px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            vertical-align: middle;
+            color: var(--primary-light);
+        }
+        
+        .btn-copiar {
+            background: none;
+            border: none;
+            color: var(--info-color);
+            cursor: pointer;
+            padding: 0 5px;
+            transition: color 0.2s;
+        }
+        
+        .btn-copiar:hover {
+            color: var(--primary-color);
+        }
+        
+        .badge-destaque {
+            background-color: var(--warning-color);
+            color: var(--dark-1);
+            padding: 3px 6px;
+            border-radius: 12px;
+            font-size: 0.75em;
+            font-weight: 600;
+            margin-left: 5px;
+        }
+        
+        .sortable {
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .sortable:hover {
+            background-color: var(--dark-3);
+        }
+        
+        .sort-icon {
+            margin-left: 5px;
+            font-size: 0.8em;
+        }
+        
+        .data-hora {
+            white-space: nowrap;
+        }
+        
+        .hora-jogo {
+            color: var(--light-3);
+            font-size: 0.9em;
+        }
+        
+        .btn-alerta {
+            background-color: var(--warning-color);
+            color: white;
+        }
+        
+        .btn-alerta:hover {
+            background-color: #e67e22;
+        }
+        
+        #rodadaInfo {
+            background-color: var(--dark-2);
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            border: 1px solid var(--dark-4);
+        }
+        
+        #rodadaInfo h3 {
+            color: var(--light-1);
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+        
+        #rodadaDetails {
+            color: var(--light-2);
+            font-size: 0.95em;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <%- include('../../partials/admin/sidebar', { activePage: 'jogos' }) %>
+        
+        <main class="main-content">
+            <header class="content-header">
+                <h1><i class="fas fa-gamepad"></i> Gerenciar Jogos</h1>
+                <p class="breadcrumb">Partidas cadastradas</p>
+            </header>
+
+            <% if (success) { %>
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle"></i> <%= success %>
+                </div>
+            <% } %>
+            
+            <% if (error) { %>
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-circle"></i> <%= error %>
+                </div>
+            <% } %>
+
+            <section class="content-body">
+                <div class="section-header">
+                    <h2 class="section-title"><i class="fas fa-calendar-alt"></i> Partidas Cadastradas</h2>
+                    <div class="section-actions" style="margin-bottom: 20px;">
+                        <a href="/admin/jogos/adicionar" class="btn btn-primary">
+                            <i class="fas fa-plus-circle"></i> Nova Partida
+                        </a>
+                    </div>
+                </div>
+
+                <% if (jogos.length === 0) { %>
+                    <div class="empty-state" style="margin-bottom: 20px;">
+                        <i class="fas fa-calendar-times"></i>
+                        <h3>Nenhuma partida cadastrada</h3>
+                        <p>Comece adicionando uma nova partida ou atualizando os campeonatos</p>
+                        <a href="/admin/jogos/adicionar" class="btn btn-primary">
+                            <i class="fas fa-plus-circle"></i> Adicionar Partida
+                        </a>                   
+                    </div>
+                <% } else { %>
+                    <div class="table-responsive">
+                        <table class="admin-table" id="gamesTable">
+                            <thead>
+                                <tr>
+                                    <th>Competição</th>
+                                    <th>Rodada</th>
+                                    <th>Time Casa</th>
+                                    <th>Time Visitante</th>
+                                    <th id="sortDate" class="sortable">Data/Hora</th>
+                                    <th>Transmissões</th>
+                                    <th>Link</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% jogos.forEach(jogo => { %>
+                                    <tr class="<%= jogo.destac ? 'destaque' : '' %>">
+                                        <td>
+                                            <%= jogo.competicao_nome %>
+                                            <% if (jogo.destac) { %>
+                                                <span class="badge-destaque">Destaque</span>
+                                            <% } %>
+                                        </td>
+                                        <td><%= jogo.rodada %></td>
+                                        
+                                        <td>
+                                            <div class="team-display">
+                                                <% if (jogo.time_casa_imagem) { %>
+                                                    <img src="<%= jogo.time_casa_imagem %>" alt="<%= jogo.time_casa_nome %>" class="team-logo">
+                                                <% } else { %>
+                                                    <div class="team-logo-placeholder">
+                                                        <i class="fas fa-shield-alt"></i>
+                                                    </div>
+                                                <% } %>
+                                                <div class="team-name"><%= jogo.time_casa_nome %></div>
+                                            </div>
+                                        </td>
+                                        
+                                        <td>
+                                            <div class="team-display">
+                                                <% if (jogo.time_visitante_imagem) { %>
+                                                    <img src="<%= jogo.time_visitante_imagem %>" alt="<%= jogo.time_visitante_nome %>" class="team-logo">
+                                                <% } else { %>
+                                                    <div class="team-logo-placeholder">
+                                                        <i class="fas fa-shield-alt"></i>
+                                                    </div>
+                                                <% } %>
+                                                <div class="team-name"><%= jogo.time_visitante_nome %></div>
+                                            </div>
+                                        </td>
+                                
+                                        <td class="data-hora">
+                                            <%= jogo.data %><br>
+                                            <span class="hora-jogo"><%= jogo.hora %></span>
+                                        </td>
+                                        
+                                        <td>
+                                            <% if (jogo.canal_id) { %>
+                                                <ul class="transmissoes-list">
+                                                    <li><%= jogo.canal_id %></li>
+                                                </ul>
+                                            <% } else { %>
+                                                <span class="text-muted">--</span>
+                                            <% } %>
+                                        </td>
+                                        
+                                        <td>
+                                            <% if (jogo.link_partida) { %>
+                                                <span class="link-partida" title="<%= jogo.link_partida %>">
+                                                    <%= jogo.link_partida.replace(/^https?:\/\//, '') %>
+                                                </span>
+                                                <button class="btn-copiar" data-clipboard-text="<%= jogo.link_partida %>">
+                                                    <i class="fas fa-copy"></i>
+                                                </button>
+                                            <% } else { %>
+                                                <span class="text-muted">--</span>
+                                            <% } %>
+                                        </td>
+                                                                               
+                                        <td>
+                                            <div class="actions">
+                                                <a href="/admin/jogos/editar/<%= jogo.id %>" class="btn btn-sm btn-edit">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <form action="/admin/jogos/excluir/<%= jogo.id %>" method="POST" class="d-inline">
+                                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Tem certeza que deseja excluir esta partida?')">
+                                                        <i class="fas fa-trash-alt"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <% }); %>
+                            </tbody>
+                        </table>
+                    </div>
+                <% } %>
+            </section>
+        </main>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Ação para carregar os dados da rodada
+            $('#loadRodada').click(function() {
+                $.get('/admin/jogos/rodada', function(data) {
+                    $('#rodadaDetails').html(` 
+                        <p><strong>Rodada:</strong> ${data.rodada}</p>
+                        <p><strong>Texto da Rodada:</strong> ${data.textoRodada}</p>
+                        <p><strong>Data de Atualização:</strong> ${data.dataAtualizacao}</p>
+                        <h4>Jogos da Rodada:</h4>
+                        <ul>
+                            ${data.jogos.map(jogo => `
+                                <li>${jogo.diaSemana}, ${jogo.data} - ${jogo.timeCasa} vs ${jogo.timeVisitante} às ${jogo.hora} no ${jogo.estadio}</li>
+                            `).join('')}
+                        </ul>
+                    `);
+                });
+            });
+    
+            // Atualizar jogos da Série A
+            $('#updateCompeticao1A').click(function() {
+                if (confirm('Deseja atualizar as partidas do Brasileirão Série A?')) {
+                    $.get('/admin/jogos/update-competicao/1', function(response) {
+                        alert(response);
+                        location.reload();
+                    }).fail(function() {
+                        alert('Erro ao atualizar as partidas da Série A.');
+                    });
+                }
+            });
+
+            // Atualizar jogos da Série B
+            $('#updateCompeticao2B').click(function() {
+                if (confirm('Deseja atualizar as partidas do Brasileirão Série B?')) {
+                    $.get('/admin/jogos/update-competicao/2', function(response) {
+                        alert(response);
+                        location.reload();
+                    }).fail(function() {
+                        alert('Erro ao atualizar as partidas da Série B.');
+                    });
+                }
+            });
+            
+            // Ordenação por Data/Hora
+            let dateSortDirection = 1; // 1 = ascendente, -1 = descendente
+            
+            $('#sortDate').click(function() {
+                const table = $('#gamesTable');
+                const rows = table.find('tbody > tr').get();
+                
+                rows.sort((a, b) => {
+                    const dateTimeA = $(a).find('.data-hora').text().trim();
+                    const dateTimeB = $(b).find('.data-hora').text().trim();
+                    
+                    const [dateA, timeA] = dateTimeA.split('\n');
+                    const [dateB, timeB] = dateTimeB.split('\n');
+                    
+                    const [dayA, monthA, yearA] = dateA.split('/');
+                    const [dayB, monthB, yearB] = dateB.split('/');
+                    
+                    const dateObjA = new Date(yearA, monthA-1, dayA);
+                    const dateObjB = new Date(yearB, monthB-1, dayB);
+                    
+                    return (dateObjA - dateObjB) * dateSortDirection;
+                });
+
+                table.find('tbody').empty().append(rows);
+                dateSortDirection *= -1;
+                updateSortIcon();
+            });
+            
+            function updateSortIcon() {
+                $('#sortDate .sort-icon').remove();
+                const iconClass = dateSortDirection === 1 ? 'fa-arrow-up' : 'fa-arrow-down';
+                $('#sortDate').append('<i class="fas sort-icon ' + iconClass + '"></i>');
+            }
+            
+            // Inicializa o ícone
+            updateSortIcon();
+            
+            // Copiar link para clipboard
+            $('.btn-copiar').click(function() {
+                const text = $(this).data('clipboard-text');
+                navigator.clipboard.writeText(text).then(function() {
+                    alert('Link copiado para a área de transferência!');
+                }, function() {
+                    alert('Erro ao copiar o link.');
+                });
+            });
+        });
+    </script>
+</body>
+</html>

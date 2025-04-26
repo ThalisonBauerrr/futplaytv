@@ -1,0 +1,45 @@
+{
+    "name": "futplat-tv",
+    "version": "1.0.0",
+    "description": "Plataforma de streaming esportivo",
+    "main": "server.js",
+    "scripts": {
+        "start": "node server.js",
+        "dev": "nodemon server.js"
+    },
+    "dependencies": {
+        "axios": "^1.8.4",
+        "bcrypt": "^5.1.1",
+        "cheerio": "^1.0.0",
+        "compression": "^1.8.0",
+        "connect-flash": "^0.1.1",
+        "cookie-parser": "^1.4.7",
+        "cors": "^2.8.5",
+        "delay": "^6.0.0",
+        "dotenv": "^16.4.7",
+        "ejs": "^3.1.10",
+        "express": "^4.21.2",
+        "express-rate-limit": "^7.5.0",
+        "express-session": "^1.18.1",
+        "helmet": "^7.2.0",
+        "mercadopago": "^1.5.17",
+        "mongoose": "^8.13.2",
+        "morgan": "^1.10.0",
+        "node-cache": "^5.1.2",
+        "node-cron": "^3.0.3",
+        "playwright": "^1.51.1",
+        "playwright-chromium": "^1.51.1",
+        "puppeteer": "^24.6.1",
+        "sequelize": "^6.37.7",
+        "sqlite3": "^5.1.7",
+        "uuid": "^11.1.0",
+        "winston": "^3.17.0"
+    },
+    "devDependencies": {
+        "autoprefixer": "^10.4.21",
+        "cssnano": "^6.1.2",
+        "nodemon": "^3.1.9",
+        "postcss": "^8.5.3",
+        "postcss-cli": "^10.1.0"
+    }
+}

@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= pageTitle %></title>
+</head>
+<body>
+    <h1><%= pageTitle %></h1>
+
+    <ul>
+        <% jogos.forEach(jogo => { %>
+            <li>
+                <strong><%= jogo.titulo %></strong> - <%= jogo.competicao %> 
+                <br> Canal: <%= jogo.canal %>
+            </li>
+        <% }) %>
+    </ul>
+</body>
+</html>
