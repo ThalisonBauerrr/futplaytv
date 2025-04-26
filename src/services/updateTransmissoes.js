@@ -117,7 +117,7 @@ async function updateTransmissoes() {
 
         console.log('Iniciando navegador...');
         browser = await puppeteer.launch({
-            headless: false,
+            headless: true,
             args: ['--no-sandbox', '--disable-setuid-sandbox'],
             timeout: 30000
         });
