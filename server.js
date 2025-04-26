@@ -119,7 +119,7 @@ app.get('/', (req, res) => {
 
 
 // Inicia o servidor
-app.listen(port, async () => {
+app.listen(3000, '0.0.0.0', async () => {
   console.log(`Servidor rodando em http://localhost:${port}`);
   
   // Executa na inicialização
