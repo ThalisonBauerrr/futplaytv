@@ -2,7 +2,7 @@ const mysql = require('mysql2/promise');  // Importando a versão promise do mys
 
 // Criando a conexão com o banco de dados MySQL
 const db = mysql.createPool({
-  host: '191.252.196.56',  // IP do seu servidor MySQL
+  host: '127.0.0.1',  // IP do seu servidor MySQL
   user: 'bauerthalison',    // Seu usuário MySQL
   password: 'p5pexvm',      // Sua senha do MySQL
   database: 'futplay',      // Nome do banco de dados
