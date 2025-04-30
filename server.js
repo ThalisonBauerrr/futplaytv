@@ -63,7 +63,7 @@ app.use((req, res, next) => {
 require('./config/server')(app); // Manter a configuração do servidor conforme já está
 
 // Configuração para servir arquivos estáticos
-app.use(express.static(path.join(__dirname, 'src/public'))); // Ajuste conforme sua estrutura
+app.use(express.static(path.join(__dirname, '/root/futplaytv/src/public'))); // Ajuste conforme sua estrutura
 
 // Configuração das views
 app.set('views', path.join(__dirname, 'src', 'views'));
