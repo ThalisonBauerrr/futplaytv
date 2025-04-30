@@ -3,8 +3,10 @@ const puppeteer = require('puppeteer');
 const db = require('../../config/database');
 
 async function saveToDatabase(partidasData) {
+    let connection;
     try {
-        await db.run('BEGIN TRANSACTION');
+        connection = await db.getConnection();
+        await connection.beginTransaction();
         
         let partidasInseridas = 0;
         let partidasIgnoradas = 0;
@@ -12,32 +14,27 @@ async function saveToDatabase(partidasData) {
 
         for (const competicao of partidasData.competicoes) {
             try {
-                const competicaoId = await getCompetitionId(competicao.competicao);
+                const competicaoId = await getCompetitionId(competicao.competicao, connection);
 
                 for (const partida of competicao.partidas) {
                     try {
                         const [dia, mes, ano] = partida.data.split('/');
                         const dataSQL = `${ano}-${mes}-${dia}`;
 
-                        const partidaExistente = await new Promise((resolve, reject) => {
-                            db.get(
-                                `SELECT id, rodada, hora FROM partidas 
-                                WHERE competicao_id = ? 
-                                AND data = ? 
-                                AND time_casa_nome = ? 
-                                AND time_visitante_nome = ?`,
-                                [
-                                    competicaoId,
-                                    dataSQL,
-                                    partida.timeCasa.nome,
-                                    partida.timeVisitante.nome
-                                ],
-                                (err, row) => {
-                                    if (err) return reject(err);
-                                    resolve(row);
-                                }
-                            );
-                        });
+                        const [rows] = await connection.query(
+                            `SELECT id, rodada, hora FROM partidas 
+                            WHERE competicao_id = ? 
+                            AND data = ? 
+                            AND time_casa_nome = ? 
+                            AND time_visitante_nome = ?`,
+                            [
+                                competicaoId,
+                                dataSQL,
+                                partida.timeCasa.nome,
+                                partida.timeVisitante.nome
+                            ]
+                        );
+                        const partidaExistente = rows[0];
 
                         if (partidaExistente) {
                             const needsUpdate = 
@@ -45,28 +42,22 @@ async function saveToDatabase(partidasData) {
                                 partidaExistente.hora !== partida.hora;
 
                             if (needsUpdate) {
-                                await new Promise((resolve, reject) => {
-                                    db.run(
-                                        `UPDATE partidas SET
-                                            rodada = ?,
-                                            hora = ?,
-                                            time_casa_imagem = ?,
-                                            time_visitante_imagem = ?,
-                                            updated_at = CURRENT_TIMESTAMP
-                                        WHERE id = ?`,
-                                        [
-                                            partida.rodada,
-                                            partida.hora,
-                                            partida.timeCasa.imagem,
-                                            partida.timeVisitante.imagem,
-                                            partidaExistente.id
-                                        ],
-                                        (err) => {
-                                            if (err) return reject(err);
-                                            resolve();
-                                        }
-                                    );
-                                });
+                                await connection.query(
+                                    `UPDATE partidas SET
+                                        rodada = ?,
+                                        hora = ?,
+                                        time_casa_imagem = ?,
+                                        time_visitante_imagem = ?,
+                                        updated_at = CURRENT_TIMESTAMP
+                                    WHERE id = ?`,
+                                    [
+                                        partida.rodada,
+                                        partida.hora,
+                                        partida.timeCasa.imagem,
+                                        partida.timeVisitante.imagem,
+                                        partidaExistente.id
+                                    ]
+                                );
                                 partidasAtualizadas++;
                                 console.log(`   - Partida atualizada: ${partida.timeCasa.nome} vs ${partida.timeVisitante.nome} em ${dataSQL}`);
                             } else {
@@ -76,29 +67,23 @@ async function saveToDatabase(partidasData) {
                             continue;
                         }
 
-                        await new Promise((resolve, reject) => {
-                            db.run(
-                                `INSERT INTO partidas (
-                                    competicao_id, rodada, hora, data,
-                                    time_casa_nome, time_visitante_nome,
-                                    time_casa_imagem, time_visitante_imagem
-                                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-                                [
-                                    competicaoId,
-                                    partida.rodada,
-                                    partida.hora,
-                                    dataSQL,
-                                    partida.timeCasa.nome,
-                                    partida.timeVisitante.nome,
-                                    partida.timeCasa.imagem,
-                                    partida.timeVisitante.imagem
-                                ],
-                                (err) => {
-                                    if (err) return reject(err);
-                                    resolve();
-                                }
-                            );
-                        });
+                        await connection.query(
+                            `INSERT INTO partidas (
+                                competicao_id, rodada, hora, data,
+                                time_casa_nome, time_visitante_nome,
+                                time_casa_imagem, time_visitante_imagem
+                            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+                            [
+                                competicaoId,
+                                partida.rodada,
+                                partida.hora,
+                                dataSQL,
+                                partida.timeCasa.nome,
+                                partida.timeVisitante.nome,
+                                partida.timeCasa.imagem,
+                                partida.timeVisitante.imagem
+                            ]
+                        );
                         partidasInseridas++;
                         console.log(`   - Nova partida inserida: ${partida.timeCasa.nome} vs ${partida.timeVisitante.nome} em ${dataSQL}`);
                         
@@ -113,7 +98,7 @@ async function saveToDatabase(partidasData) {
             }
         }
         
-        await db.run('COMMIT');
+        await connection.commit();
         console.log(`\nResumo do salvamento:
           - Partidas novas inseridas: ${partidasInseridas}
           - Partidas atualizadas: ${partidasAtualizadas}
@@ -126,80 +111,76 @@ async function saveToDatabase(partidasData) {
             ignored: partidasIgnoradas
         };
     } catch (error) {
-        await db.run('ROLLBACK');
+        if (connection) await connection.rollback();
         console.error('Erro ao salvar no banco:', error);
         return {
             success: false,
             error: error.message
         };
+    } finally {
+        if (connection) connection.release();
     }
 }
-async function findCompetitionByName(competitionName) {
+
+async function findCompetitionByName(competitionName, connection) {
     try {
-      // Busca no banco por qualquer competição que tenha esse nome em seu JSON
-      const query = `
-        SELECT id, nome, nome_padrao 
-        FROM competicoes
-        WHERE json_extract(nome, '$.nomes') LIKE ?
-        LIMIT 1
-      `;
-      
-      const compRow = await new Promise((resolve, reject) => {
-        db.get(query, [`%"${competitionName}"%`], (err, row) => {
-          if (err) return reject(err);
-          resolve(row);
-        });
-      });
-  
-      if (compRow) {
-        const nomes = JSON.parse(compRow.nome).nomes;
-        return {
-          id: compRow.id,
-          nome_padrao: compRow.nome_padrao,
-          nomes: nomes
-        };
-      }
-      return null;
-    } catch (error) {
-      console.error('Erro ao buscar competição:', error);
-      return null;
-    }
-}
-async function getCompetitionId(competitionName) {
-    try {
-      // Primeiro tenta encontrar a competição com o nome exato
-      const existingComp = await findCompetitionByName(competitionName);
-  
-      if (existingComp) {
-        console.log(`Competição encontrada: ${existingComp.nome_padrao} (ID: ${existingComp.id})`);
-        return existingComp.id;
-      }
-  
-      // Se não encontrou, cria nova competição com esse nome
-      const nomesParaSalvar = {
-        nomes: [competitionName],
-        padrao: competitionName
-      };
-  
-      const result = await new Promise((resolve, reject) => {
-        db.run(
-          'INSERT INTO competicoes (nome, nome_padrao) VALUES (?, ?)',
-          [JSON.stringify(nomesParaSalvar), competitionName],
-          function(err) {
-            if (err) return reject(err);
-            resolve(this.lastID);
-          }
+        // Busca no banco por qualquer competição que tenha esse nome em seu JSON
+        const [rows] = await connection.query(
+            `SELECT id, nome, nome_padrao 
+            FROM competicoes
+            WHERE JSON_EXTRACT(nome, '$.nomes') LIKE ? 
+            OR nome_padrao LIKE ?
+            LIMIT 1`,
+            [`%${competitionName}%`, `%${competitionName}%`]
         );
-      });
-  
-      console.log(`Nova competição cadastrada: ${competitionName} (ID: ${result})`);
-      return result;
-  
+        
+        if (rows.length > 0) {
+            const compRow = rows[0];
+            // Verifica se o campo nome é uma string JSON
+            const nomes = typeof compRow.nome === 'string' ? JSON.parse(compRow.nome).nomes : compRow.nome.nomes;
+            return {
+                id: compRow.id,
+                nome_padrao: compRow.nome_padrao,
+                nomes: nomes
+            };
+        }
+        return null;
     } catch (error) {
-      console.error(`Erro ao processar competição ${competitionName}:`, error);
-      throw error;
+        console.error('Erro ao buscar competição:', error);
+        return null;
     }
 }
+
+async function getCompetitionId(competitionName, connection) {
+    try {
+        // Primeiro tenta encontrar a competição com o nome exato
+        const existingComp = await findCompetitionByName(competitionName, connection);
+
+        if (existingComp) {
+            console.log(`Competição encontrada: ${existingComp.nome_padrao} (ID: ${existingComp.id})`);
+            return existingComp.id;
+        }
+
+        // Se não encontrou, cria nova competição com esse nome
+        const nomesParaSalvar = {
+            nomes: [competitionName],
+            padrao: competitionName
+        };
+
+        const [result] = await connection.query(
+            'INSERT INTO competicoes (nome, nome_padrao) VALUES (?, ?)',
+            [JSON.stringify(nomesParaSalvar), competitionName]
+        );
+
+        console.log(`Nova competição cadastrada: ${competitionName} (ID: ${result.insertId})`);
+        return result.insertId;
+
+    } catch (error) {
+        console.error(`Erro ao processar competição ${competitionName}:`, error);
+        throw error;
+    }
+}
+
 async function getjogos() {
     console.log('Iniciando scraping de partidas de futebol...');
     
@@ -216,7 +197,7 @@ async function getjogos() {
     console.log(`Buscando partidas para hoje: ${dateStr}`);
 
     const browser = await puppeteer.launch({
-        headless: true,
+        headless: false,
         args: ['--no-sandbox', '--disable-setuid-sandbox']
     });
     const page = await browser.newPage();
@@ -231,13 +212,12 @@ async function getjogos() {
         console.log('Página carregada, buscando dados...');
 
         // Esperar o carregamento dos dados
-        await page.waitForSelector('#routes-wrapper > div:nth-child(5) > div > div', {
+        await page.waitForSelector('#routes-wrapper > div:nth-child(4) > div > div', {
             timeout: 10000
         });
-
         // Verificar quantas competições existem
         const competicoesCount = await page.$$eval(
-            '#routes-wrapper > div:nth-child(5) > div > div > div',
+            '#routes-wrapper > div:nth-child(4) > div > div > div',
             divs => divs.length
         );
 
@@ -247,7 +227,7 @@ async function getjogos() {
 
         // Iterar sobre cada competição
         for (let i = 1; i <= competicoesCount; i++) {
-            const competicaoSelector = `#routes-wrapper > div:nth-child(5) > div > div > div:nth-child(${i})`;
+            const competicaoSelector = `#routes-wrapper > div:nth-child(4) > div > div > div:nth-child(${i})`;
             
             // Pegar nome da competição
             const nomeCompeticao = await page.$eval(
@@ -282,32 +262,76 @@ async function getjogos() {
                 const partidaSelector = `${competicaoSelector} > div > a:nth-child(${j})`;
 
                 try {
+                    // Dentro da função getjogos(), onde processamos cada partida:
                     const partidaData = await page.evaluate((selector, formattedDate) => {
-                        const getText = (subSelector) => {
-                            const el = document.querySelector(`${selector} ${subSelector}`);
-                            return el ? el.textContent.trim() : null;
+                        // Função auxiliar para tentar múltiplos seletores
+                        const trySelectors = (selectors, attribute = 'textContent') => {
+                            for (const sel of selectors) {
+                                try {
+                                    const el = document.querySelector(`${selector} ${sel}`);
+                                    if (el) {
+                                        return attribute === 'textContent' ? el.textContent.trim() : el.getAttribute(attribute);
+                                    }
+                                } catch (e) {
+                                    continue;
+                                }
+                            }
+                            return null;
                         };
                     
-                        const getSrc = (subSelector) => {
-                            const el = document.querySelector(`${selector} ${subSelector}`);
-                            return el ? el.getAttribute('src') : null;
-                        };
+                        // Seletores alternativos para cada campo
+                        const rodadaSelectors = [
+                            'div > div.sc-kpDqfm.fsWuRt > div:nth-child(1) > div > span:nth-child(1)'
+                        ];
+                        
+                        const horaSelectors = [
+                            'div > div.sc-kpDqfm.fsWuRt > div:nth-child(2) > div > span:nth-child(2)'
+                        ];
+                        
+                        const timeCasaNomeSelectors = [
+                            'div > div.sc-cwHptR.clodXQ > div > div.sc-bmzYkS.ivQJob > div > span',
+                            'div > div.sc-cwHptR.clodXQ > div > div.sc-bmzYkS.bFZpgo > div > span'
+                        ];
+                        
+                        const timeCasaImgSelectors = [
+                            'div > div.sc-cwHptR.clodXQ > div > div.sc-bmzYkS.ivQJob > div > img',
+                            'div > div.sc-cwHptR.clodXQ > div > div.sc-bmzYkS.bFZpgo > div.sc-koXPp.fQeBdq > img'
+                        ];
+                        
+                        const timeVisitanteNomeSelectors = [
+                            'div > div.sc-cwHptR.clodXQ > div > div.sc-bmzYkS.epSQAH > div > span',
+                            'div > div.sc-cwHptR.clodXQ > div > div.sc-bmzYkS.gsaEwE > div.sc-koXPp.fQeBdq > span'
+                        ];
+                        
+                        const timeVisitanteImgSelectors = [
+                            'div > div.sc-cwHptR.clodXQ > div > div.sc-bmzYkS.epSQAH > div > img',
+                            'div > div.sc-cwHptR.clodXQ > div > div.sc-bmzYkS.gsaEwE > div.sc-koXPp.fQeBdq > img'
+                        ];
                     
                         return {
-                            rodada: getText('div > div.sc-kpDqfm.fsWuRt > div:nth-child(1) > div > span:nth-child(1)'),
-                            hora: getText('div > div.sc-kpDqfm.fsWuRt > div:nth-child(2) > div > span:nth-child(2)'),
+                            rodada: trySelectors(rodadaSelectors),
+                            hora: trySelectors(horaSelectors),
                             data: formattedDate,
                             timeCasa: {
-                                nome: getText('div > div.sc-cwHptR.clodXQ > div > div.sc-bmzYkS.ivQJob > div > span'),
-                                imagem: getSrc('div > div.sc-cwHptR.clodXQ > div > div.sc-bmzYkS.ivQJob > div > img')
+                                nome: trySelectors(timeCasaNomeSelectors),
+                                imagem: trySelectors(timeCasaImgSelectors, 'src')
                             },
                             timeVisitante: {
-                                nome: getText('div > div.sc-cwHptR.clodXQ > div > div.sc-bmzYkS.epSQAH > div > span'),
-                                imagem: getSrc('div > div.sc-cwHptR.clodXQ > div > div.sc-bmzYkS.epSQAH > div > img')
+                                nome: trySelectors(timeVisitanteNomeSelectors),
+                                imagem: trySelectors(timeVisitanteImgSelectors, 'src')
                             }
                         };
                     }, partidaSelector, dateStr);
                     
+                    // Adicionar (F) para competições femininas
+                    if (nomeCompeticao && /feminino|feminina|women|womens|female/i.test(nomeCompeticao)) {
+                        if (partidaData.timeCasa.nome && !partidaData.timeCasa.nome.endsWith('(F)')) {
+                            partidaData.timeCasa.nome = `${partidaData.timeCasa.nome} (F)`;
+                        }
+                        if (partidaData.timeVisitante.nome && !partidaData.timeVisitante.nome.endsWith('(F)')) {
+                            partidaData.timeVisitante.nome = `${partidaData.timeVisitante.nome} (F)`;
+                        }
+                    }
                     console.log(`   - ${partidaData.timeCasa.nome} vs ${partidaData.timeVisitante.nome}`);
                     console.log(`     Data: ${partidaData.data} ${partidaData.hora}`);
                     if (partidaData.link) {
@@ -355,4 +379,4 @@ async function getjogos() {
     }
 }
 
-module.exports = {getjogos}
+module.exports = {getjogos};

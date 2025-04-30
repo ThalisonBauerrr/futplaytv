@@ -1,49 +1,15 @@
-const sqlite3 = require('sqlite3').verbose();
-const { promisify } = require('util'); // Para usar promisify
+const mysql = require('mysql2/promise');  // Importando a versão promise do mysql2
 
-// Criação do banco de dados SQLite
-const db = new sqlite3.Database('./futplay.db');
-
-// Promisificando o método 'all' do sqlite3 (usado para consultas SELECT)
-db.all = promisify(db.all);
-
-// Criar a tabela de usuários, se não existir
-db.serialize(() => {
-  db.run(`
-    CREATE TABLE IF NOT EXISTS usuarios (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      uuid TEXT NOT NULL UNIQUE,
-      ip TEXT NOT NULL,
-      tempo_inicio TEXT NOT NULL,
-      tempo_fim TEXT NOT NULL
-    );
-  `);
-  db.run(`
-    CREATE TABLE IF NOT EXISTS competicoes (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      nome TEXT NOT NULL
-    );
-  `);
-
-  // Tabela de partidas
-  db.run(`
-    CREATE TABLE IF NOT EXISTS partidas (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      competicao_id INTEGER,
-      rodada TEXT,
-      hora TEXT,
-      data TEXT,
-      time_casa_nome TEXT,
-      time_visitante_nome TEXT,
-      time_casa_imagem TEXT,
-      time_visitante_imagem TEXT,
-      link_partida TEXT,
-      FOREIGN KEY (competicao_id) REFERENCES competicoes(id)
-    );
-  `);
+// Criando a conexão com o banco de dados MySQL
+const db = mysql.createPool({
+  host: '191.252.196.56',  // IP do seu servidor MySQL
+  user: 'bauerthalison',    // Seu usuário MySQL
+  password: 'p5pexvm',      // Sua senha do MySQL
+  database: 'futplay',      // Nome do banco de dados
+  waitForConnections: true, // Espera por conexões disponíveis
+  connectionLimit: 10,      // Limite de conexões no pool
+  queueLimit: 0             // Limite de espera na fila
 });
 
-// Promisificar o método 'run' para executar comandos como INSERT/UPDATE/DELETE
-db.runAsync = promisify(db.run);
-
+// Agora o db já tem os métodos query e execute que retornam promessas por padrão
 module.exports = db;

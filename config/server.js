@@ -22,11 +22,13 @@ module.exports = (app) => {
         scriptSrc: [
           "'self'",
           "https://cdnjs.cloudflare.com",
+          "https://entitlements.jwplayer.com/",
           "'unsafe-inline'"
         ],
         imgSrc: [
           "'self'",
           "data:",
+          "https://playertv.net/",
           "https://reidoscanais.cc",
           "https://logodetimes.com",
           "https://embedcanaistv.com/",
@@ -35,19 +37,27 @@ module.exports = (app) => {
           "https://ge.globo.com/",
           "https://s.sde.globo.com/",
           "https://embedtv-0.icu/",
-          "https://placardefutebol.com.br"
+          "https://placardefutebol.com.br/",
+          "https://meuplayeronlinehd.com/",
+          "https://nossoplayeronlinehd.com/",
+          "https://www.google.com/",
+          
         ],
         frameSrc: [
           "'self'",
           "data:",
+          "https://playertv.net/",
+          "https://www.google.com/",
           "https://reidoscanais.cc",
           "https://embedcanaistv.com/",
           "https://embed.tvcdn.space/",
           "https://embedtv-0.icu/",
-          "https://playertv.net/",
-          "https://placardefutebol.com.br"
-        ],
-        connectSrc: ["'self'"]
+          "https://placardefutebol.com.br/",
+          "https://entitlements.jwplayer.com/",
+          "https://meuplayeronlinehd.com/",
+          "https://nossoplayeronlinehd.com/",
+        ]
+        
       }
     }
   }));

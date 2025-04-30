@@ -2,62 +2,110 @@ require('dotenv').config();
 const { v4: uuidv4 } = require('uuid');
 const usuarioModel = require('../models/usuarioModel');
 const { criarPagamentoQR } = require('../services/mercadoPagoService');
-const jogoModel = require('../models/jogoModel'); // Importa o jogoModel
+const jogoModel = require('../models/jogoModel');
 
 exports.resHome = async (req, res) => {
   try {
-    // Parte da função original resHome (jogos de hoje)
+    // 1. Buscar jogos do dia
     const jogosHoje = await jogoModel.buscarJogosDeHoje();
     
-    // Parte da função showStream (usuário e tempo de acesso)
+    // 2. Configurar/identificar usuário
     const uuidUsuario = req.cookies.uuid || uuidv4();
     const ipUsuario = req.ip;
+    
+    // Configurar cookie com UUID
+    res.cookie('uuid', uuidUsuario, { 
+      maxAge: 900000, 
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict'
+    });
 
-    res.cookie('uuid', uuidUsuario, { maxAge: 900000, httpOnly: true });
+    // 3. Verificar e atualizar dados do usuário
+    const { inserted, updated } = await usuarioModel.verificarOuAtualizarUsuario(ipUsuario, uuidUsuario);
+    const usuario = await usuarioModel.verificarUsuario(uuidUsuario);
 
-    let usuario = await usuarioModel.verificarOuAtualizarUsuario(ipUsuario, uuidUsuario);
-    usuario = await usuarioModel.verificarUsuario(uuidUsuario);
+    // 4. Calcular tempo restante de acesso
+    const tempoRestante = calcularTempoRestante(usuario.tempo_fim);
 
-    // Calcula tempo restante
-    const tempoInicio = new Date(usuario.tempo_inicio);
-    const tempoFim = new Date(usuario.tempo_fim);
-    const tempoAgora = new Date();
-    const tempoRestanteMs = tempoFim - tempoAgora;
+    // 5. Gerenciar QR Code de pagamento
+    const qrCodeBase64 = await gerenciarQRCode(uuidUsuario, usuario, inserted);
 
-    const minutosRestantes = Math.floor(tempoRestanteMs / 60000);
-    const segundosRestantes = Math.floor((tempoRestanteMs % 60000) / 1000);
-
-    let tempoRestanteFormatado = "Tempo expirado";
-    if (tempoRestanteMs > 0) {
-      tempoRestanteFormatado = `${minutosRestantes}m ${segundosRestantes}s`;
-    }
-
-    // Lógica do QR Code
-    let qrCodeBase64 = null;
-    if (usuario.inserted) {
-      const valorPagamento = process.env.VALOR_DONATE || 10.00;
-      const { qrCodeBase64: novoQrCode, paymentId, status } = await criarPagamentoQR(uuidUsuario, valorPagamento);
-      await usuarioModel.saveQRCode(uuidUsuario, paymentId, novoQrCode);
-      qrCodeBase64 = novoQrCode;
-    } else {
-      const qrCodeResult = await usuarioModel.getQRCodeByUser(uuidUsuario);
-      qrCodeBase64 = qrCodeResult ? qrCodeResult.payment_qr_code : null;
-    }
-
-    // Renderiza a página com todos os dados combinados
+    // 6. Renderizar página com os dados
     res.render('home/home', {
-      pageTitle: `Futplat.tv - HOME`,
+      pageTitle: 'Futplat.tv - HOME',
       jogos: jogosHoje,
-      tempoRestante: tempoRestanteFormatado,
+      tempoRestante: tempoRestante.texto,
+      tempoExpirado: tempoRestante.expirado,
       tempoFim: usuario.tempo_fim,
       qrCodeBase64: qrCodeBase64
     });
 
   } catch (error) {
-    console.error('Erro ao carregar página inicial:', error);
+    console.error('Erro no controller resHome:', {
+      message: error.message,
+      stack: error.stack
+    });
+    
     res.status(500).render('error/500', {
       pageTitle: 'Erro na Página Inicial',
-      errorMessage: error.message,
+      errorMessage: 'Desculpe, ocorreu um erro ao carregar a página. Por favor, recarregue ou tente novamente mais tarde.'
     });
   }
 };
+
+function precisaGerarQRCode(usuario) {
+  if (!usuario) return true;
+  
+  const agora = new Date();
+  const tempoExpirado = new Date(usuario.tempo_fim) < agora;
+  
+  return !usuario.idpayment || tempoExpirado;
+}
+
+function calcularTempoRestante(dataFim) {
+  const agora = new Date();
+  const fim = new Date(dataFim);
+  const diffMs = fim - agora;
+  
+  if (diffMs <= 0) {
+    return { texto: "Tempo expirado", expirado: true };
+  }
+  
+  const minutos = Math.floor(diffMs / 60000);
+  const segundos = Math.floor((diffMs % 60000) / 1000);
+  
+  return {
+    texto: `${minutos}m ${segundos}s`,
+    expirado: false
+  };
+}
+
+async function gerenciarQRCode(uuidUsuario) {
+  try {
+    // 1. Busca dados do usuário
+    const usuario = await usuarioModel.getDadosParaQRCode(uuidUsuario);
+    
+    // 2. Verifica se precisa gerar novo QR Code
+    if (!precisaGerarQRCode(usuario)) {
+      return usuario.payment_qr_code;
+    }
+
+    // 3. Gera novo QR Code se necessário
+    console.log('🆕 Gerando novo QR Code...');
+    const { qrCodeBase64, paymentId } = await criarPagamentoQR(uuidUsuario, 1.50);
+    
+    await usuarioModel.atualizarQRCodeETempo(
+      uuidUsuario,
+      paymentId,
+      qrCodeBase64,
+      process.env.MINUTES_FREE || 10
+    );
+    
+    return qrCodeBase64;
+
+  } catch (error) {
+    console.error('Erro no gerenciamento do QR Code:', error);
+    return null;
+  }
+}

@@ -2,7 +2,7 @@
 const {updateTransmissoes} = require('./src/services/updateTransmissoes');
 const registroDiarioService = require('./src/services/system');
 const {atualizarPlacaresNoBanco} = require('./src/services/atualizaPartida');
-
+const { atualizarStatusPagamentos } = require('./src/services/mercadoPagoService'); // Supondo que 
 
 const express = require('express');
 const session = require('express-session');
@@ -64,7 +64,6 @@ require('./config/server')(app); // Manter a configuração do servidor conforme
 
 // Configuração para servir arquivos estáticos
 app.use(express.static(path.join(__dirname, 'src/public'))); // Ajuste conforme sua estrutura
-app.use('/css', express.static(path.join(__dirname, 'src/public/css')));
 
 // Configuração das views
 app.set('views', path.join(__dirname, 'src', 'views'));
@@ -102,30 +101,41 @@ async function agendarRotinaDiaria() {
   });
 }
 
-function iniciarAtualizacaoDePlacares() {
-  cron.schedule('*/1 * * * *', async () => { // Rodando a cada 1 minuto
+function crons() {
+  cron.schedule('*/1 * * * *', async () => { // Rodando a cada 5 minutos
     try {
-      const atualizadas = await atualizarPlacaresNoBanco();
-      console.log(`✅ ${atualizadas} placares atualizados com sucesso!`);
+      //console.log('🔄 Verificando status de pagamentos...');
+      const resultado = await atualizarStatusPagamentos();
+      console.log(`🔄 ${resultado.atualizados}/${resultado.total} pagamentos verificados`);
+    } catch (error) {
+      console.error('❌ Erro ao verificar pagamentos:', error.message);
+    }
+
+    try {
+      await atualizarPlacaresNoBanco();
+      //console.log(`✅ ${atualizadas} placares atualizados com sucesso!`);
     } catch (error) {
       console.error('❌ Erro ao atualizar placares:', error.message);
     }
+    
+  }, {
+    timezone: "America/Sao_Paulo"
   });
 }
-// Rota principal
+
 app.get('/', (req, res) => {
   res.send('Servidor rodando!');
 });
 
 
-// Inicia o servidor
+// No final do arquivo, modifique a parte que inicia o servidor:
 app.listen(3000, '0.0.0.0', async () => {
   console.log(`Servidor rodando em http://localhost:${port}`);
   
   // Executa na inicialização
   await iniciarRotinas();
 
-  // Agenda a execução diária
+  // Agenda as execuções periódicas
   agendarRotinaDiaria();
-  iniciarAtualizacaoDePlacares()
+  crons();
 });

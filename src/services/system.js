@@ -1,5 +1,5 @@
 const db = require('../../config/database');
-const {getjogos} = require('./getJogos');
+const { getjogos } = require('./getJogos');
 
 class RegistroDiarioService {
   constructor() {
@@ -19,27 +19,22 @@ class RegistroDiarioService {
     ].join('-');
   }
 
+  // Alterado para usar db.query sem .promise(), pois já está usando mysql2/promise
   async verificarRegistroDoDia() {
-    return new Promise((resolve) => {
-      db.get(
-        `SELECT id FROM system WHERE data = ?`, 
-        [this.hoje],
-        (err, row) => resolve(!!row)
-      );
-    });
+    const [rows] = await db.query(
+      `SELECT id FROM \`system\` WHERE data = ?`, 
+      [this.hoje]
+    );
+    return rows.length > 0;  // Verifica se há registros
   }
 
+  // Alterado para usar db.query sem .promise()
   async criarRegistro() {
-    return new Promise((resolve, reject) => {
-      db.run(
-        `INSERT INTO system (data) VALUES (?)`,
-        [this.hoje],
-        function(err) {
-          if (err) return reject(err);
-          resolve(this.lastID);
-        }
-      );
-    });
+    const [result] = await db.query(
+      `INSERT INTO \`system\` (data) VALUES (?)`,
+      [this.hoje]
+    );
+    return result.insertId;  // Retorna o ID do registro inserido
   }
 
   async executarRotinaDiaria() {

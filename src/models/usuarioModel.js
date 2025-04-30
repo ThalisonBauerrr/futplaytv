@@ -1,146 +1,287 @@
 const db = require('../../config/database');
 
-const verificarUsuario = (uuid) => {
-  return new Promise((resolve, reject) => {
-    db.get("SELECT tempo_inicio, tempo_fim FROM usuarios WHERE uuid = ?", [uuid], (err, row) => {
-      if (err) {
-        return reject(err);  // Caso de erro, rejeita a Promise
-      }
-      resolve(row);  // Caso contrário, resolve com o resultado, incluindo as datas tempo_inicio e tempo_fim
-    });
-  });
+const verificarUsuario = async (uuid) => {
+  let connection;
+  try {
+    connection = await db.getConnection();
+    await connection.beginTransaction();
+    
+    const [rows] = await connection.query(
+      "SELECT tempo_inicio, tempo_fim, idpayment, payment_qr_code FROM usuarios WHERE uuid = ? FOR UPDATE", 
+      [uuid]
+    );
+    
+    await connection.commit(); // Libera o lock após a verificação
+    return rows[0] || null;
+  } catch (err) {
+    if (connection) await connection.rollback();
+    console.error('Erro ao verificar usuário:', err);
+    throw err;
+  } finally {
+    if (connection) await connection.release();
+  }
 };
+const atualizarTempoFim = async (uuid) => {
+  let connection;
+  try {
+    connection = await db.getConnection();
+    const minutesFree = parseInt(process.env.MINUTES_FREE) || 10;
 
-const atualizarTempoFim = (uuid) => {
-  return new Promise((resolve, reject) => {
-    const minutesFree = parseInt(process.env.MINUTES_FREE) || 10;  // Pega o valor de MINUTES_FREE (default 10 se não encontrado)
-  
-    // Calculando tempo de fim
-    const tempoInicio = new Date();  // Data e hora atual
-    const tempoFim = new Date(tempoInicio.getTime() + minutesFree * 60000);  // Adiciona os minutos gratuitos ao tempo de início
-  
-    // Formata a data para o formato YYYY-MM-DD HH:MM:SS
-    const tempoFimFormatado = formatDate(tempoFim);
-  
-    // Atualiza o tempo de fim do usuário com base no UUID
-    db.run("UPDATE usuarios SET tempo_fim = ? WHERE uuid = ?", [tempoFimFormatado, uuid], function(err) {
-      if (err) {
-        return reject(err);  // Se houver erro, rejeita a Promise
-      }
-      resolve();  // Caso contrário, resolve a Promise
-    });
-  });
+    const [result] = await connection.query(
+      "UPDATE usuarios SET tempo_fim = DATE_ADD(NOW(), INTERVAL ? MINUTE) WHERE uuid = ?",
+      [minutesFree, uuid]
+    );
+
+    return result.affectedRows > 0;
+  } catch (err) {
+    console.error('Erro ao atualizar tempo de fim:', err);
+    throw err;
+  } finally {
+    if (connection) await connection.release();
+  }
 };
+const verificarOuAtualizarUsuario = async (ip, uuid) => {
+  let connection;
+  try {
+    connection = await db.getConnection();
+    await connection.beginTransaction();
 
-const verificarOuAtualizarUsuario = (ip, uuid) => {
-  return new Promise((resolve, reject) => {
-    // Primeiro, verificamos se o IP já existe
-    db.get("SELECT * FROM usuarios WHERE ip = ?", [ip], (err, row) => {
-      if (err) {
-        return reject(err);  // Caso de erro, rejeita a Promise
+    // Verifica se o IP já existe
+    const [rowsByIp] = await connection.query(
+      "SELECT uuid FROM usuarios WHERE ip = ?", 
+      [ip]
+    );
+
+    if (rowsByIp.length > 0) {
+      if (rowsByIp[0].uuid !== uuid) {
+        // Atualiza o UUID se for diferente
+        const [result] = await connection.query(
+          "UPDATE usuarios SET uuid = ? WHERE ip = ?", 
+          [uuid, ip]
+        );
+        await connection.commit();
+        console.log(`IP ${ip} encontrado. UUID atualizado.`);
+        return { updated: result.affectedRows > 0 };
       }
+      console.log(`IP ${ip} e UUID já estão atualizados.`);
+      return { noChange: true };
+    }
 
-      if (row) {
-        // Se o IP existe, verificamos se o UUID é diferente
-        if (row.uuid !== uuid) {
-          // Atualiza o UUID se for diferente
-          db.run("UPDATE usuarios SET uuid = ? WHERE ip = ?", [uuid, ip], function(err) {
-            if (err) {
-              return reject(err);  // Se houver erro, rejeita a Promise
-            }
-            console.log(`IP ${ip} encontrado. UUID atualizado.`);
-            resolve({ updated: true });  // Resolve a Promise com o resultado de atualização
-          });
-        } else {
-          // Se o IP e UUID são iguais, não altera nada
-          console.log(`IP ${ip} e UUID já estão atualizados.`);
-          resolve({ noChange: true });  // Resolve indicando que não houve alteração
-        }
-      } else {
-        // Se o IP não existe, verificamos o UUID
-        db.get("SELECT * FROM usuarios WHERE uuid = ?", [uuid], (err, row) => {
-          if (err) {
-            return reject(err);  // Se houver erro, rejeita a Promise
-          }
+    // Verifica se o UUID já existe
+    const [rowsByUuid] = await connection.query(
+      "SELECT ip FROM usuarios WHERE uuid = ?", 
+      [uuid]
+    );
 
-          if (row) {
-            // Se o UUID já existe, mas o IP é diferente, atualizamos o IP
-            if (row.ip !== ip) {
-              db.run("UPDATE usuarios SET ip = ? WHERE uuid = ?", [ip, uuid], function(err) {
-                if (err) {
-                  return reject(err);  // Se houver erro, rejeita a Promise
-                }
-                console.log(`UUID ${uuid} encontrado. IP atualizado.`);
-                resolve({ updated: true });  // Resolve a Promise com o resultado de atualização
-              });
-            } else {
-              // Se o UUID e o IP são iguais, não altera nada
-              console.log(`UUID ${uuid} e IP já estão atualizados.`);
-              resolve({ noChange: true });  // Resolve indicando que não houve alteração
-            }
-          } else {
-            // Se nem o IP nem o UUID existem, inserimos um novo usuário
-            const minutesFree = parseInt(process.env.MINUTES_FREE) || 10;
-            const tempoInicio = new Date();
-            const tempoFim = new Date(tempoInicio.getTime() + minutesFree * 60000);  // Adiciona os minutos gratuitos
-
-            // Formata as datas para o formato YYYY-MM-DD HH:MM:SS
-            const tempoInicioFormatado = formatDate(tempoInicio);
-            const tempoFimFormatado = formatDate(tempoFim);
-
-            // Inserir um novo usuário
-            db.run("INSERT INTO usuarios (uuid, ip, tempo_inicio, tempo_fim) VALUES (?, ?, ?, ?)", [uuid, ip, tempoInicioFormatado, tempoFimFormatado], function(err) {
-              if (err) {
-                return reject(err);  // Se houver erro, rejeita a Promise
-              }
-              console.log(`Novo usuário com IP ${ip} e UUID ${uuid} inserido.`);
-              resolve({ inserted: true });  // Resolve a Promise indicando que o usuário foi inserido
-            });
-          }
-        });
+    if (rowsByUuid.length > 0) {
+      if (rowsByUuid[0].ip !== ip) {
+        // Atualiza o IP se for diferente
+        const [result] = await connection.query(
+          "UPDATE usuarios SET ip = ? WHERE uuid = ?", 
+          [ip, uuid]
+        );
+        await connection.commit();
+        console.log(`UUID ${uuid} encontrado. IP atualizado.`);
+        return { updated: result.affectedRows > 0 };
       }
-    });
-  });
-};
+      console.log(`UUID ${uuid} e IP já estão atualizados.`);
+      return { noChange: true };
+    }
 
-const formatDate = (date) => {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0'); // Meses começam em 0
-  const day = String(date.getDate()).padStart(2, '0');
-  const hours = String(date.getHours()).padStart(2, '0');
-  const minutes = String(date.getMinutes()).padStart(2, '0');
-  const seconds = String(date.getSeconds()).padStart(2, '0');
-  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-};
+    // Cria novo usuário se não existir
+    const minutesFree = parseInt(process.env.MINUTES_FREE) || 10;
+    const [result] = await connection.query(
+      `INSERT INTO usuarios 
+       (uuid, ip, tempo_inicio, tempo_fim) 
+       VALUES (?, ?, NOW(), DATE_ADD(NOW(), INTERVAL ? MINUTE))`,
+      [uuid, ip, minutesFree]
+    );
 
-const getQRCodeByUser = (uuid) => {
-  return new Promise((resolve, reject) => {
-    db.get("SELECT payment_qr_code FROM usuarios WHERE uuid = ?", [uuid], (err, row) => {
-      if (err) {
-        reject(err);
-      }
-      resolve(row);  // Retorna o QR Code armazenado
-    });
-  });
-};
+    await connection.commit();
+    console.log(`Novo usuário com IP ${ip} e UUID ${uuid} inserido.`);
+    return { inserted: result.affectedRows > 0 };
 
-// Função para salvar o QR Code no banco de dados
-const saveQRCode = (uuid, paymentId, qrCodeBase64) => {
-  return new Promise((resolve, reject) => {
-    const updateQuery = 'UPDATE usuarios SET idpayment = ?, payment_qr_code = ? WHERE uuid = ?';
-    db.run(updateQuery, [paymentId, qrCodeBase64, uuid], function (err) {
-      if (err) {
-        reject(err);
-      }
-      resolve();  // Salvo com sucesso
-    });
-  });
+  } catch (err) {
+    if (connection) await connection.rollback();
+    console.error('Erro ao verificar/atualizar usuário:', err);
+    throw err;
+  } finally {
+    if (connection) await connection.release();
+  }
 };
+const getQRCodeByUser = async (uuid) => {
+  let connection;
+  try {
+    connection = await db.getConnection();
+    const [rows] = await connection.query(
+      "SELECT payment_qr_code, idpayment FROM usuarios WHERE uuid = ? LIMIT 1", 
+      [uuid]
+    );
+    
+    if (!rows[0]) return null;
+    
+    return {
+      qrCode: rows[0].payment_qr_code,
+      paymentId: rows[0].idpayment
+    };
+  } catch (err) {
+    console.error('Erro ao buscar QR Code:', err);
+    throw err;
+  } finally {
+    if (connection) await connection.release();
+  }
+};
+const saveQRCode = async (uuid, paymentId, qrCodeBase64) => {
+  let connection;
+  try {
+    connection = await db.getConnection();
+    await connection.beginTransaction(); // ⚠️ Inicia transação
 
+    console.log('Dados recebidos:', { uuid, paymentId, qrCodeLength: qrCodeBase64?.length });
+
+    if (!uuid || !paymentId || !qrCodeBase64) {
+      throw new Error('Dados inválidos para salvar QR Code');
+    }
+
+    const [result] = await connection.query(
+      `UPDATE usuarios 
+       SET idpayment = ?, 
+           payment_qr_code = ?,
+           updated_at = CURRENT_TIMESTAMP
+       WHERE uuid = ?`,
+      [paymentId, qrCodeBase64, uuid]
+    );
+
+    console.log('Resultado da atualização:', result);
+
+    if (result.affectedRows === 0) {
+      throw new Error(`Nenhum usuário com UUID ${uuid} foi encontrado para atualização`);
+    }
+
+    await connection.commit(); // ✅ Confirma a transação
+    console.log('QR Code salvo com sucesso no banco de dados.');
+    return true;
+  } catch (error) {
+    if (connection) await connection.rollback(); // 🔄 Rollback em caso de erro
+    console.error('Erro ao salvar QR Code:', error.message);
+    throw error;
+  } finally {
+    if (connection) await connection.release();
+  }
+};
+const limparDadosPagamento = async (uuid) => {
+  let connection;
+  try {
+    connection = await db.getConnection();
+    const [result] = await connection.query(
+      `UPDATE usuarios 
+       SET idpayment = NULL, 
+           payment_qr_code = NULL
+       WHERE uuid = ?`,
+      [uuid]
+    );
+    return result.affectedRows > 0;
+  } catch (err) {
+    console.error('Erro ao limpar dados de pagamento:', err);
+    throw err;
+  } finally {
+    if (connection) await connection.release();
+  }
+};
+const atualizarDadosPagamento = async (uuid, paymentId, qrCode) => {
+  let connection;
+  try {
+    connection = await db.getConnection();
+    
+    const [result] = await connection.query(
+      `UPDATE usuarios 
+       SET 
+         idpayment = ?,
+         payment_qr_code = ?,
+         tempo_inicio = NOW(),
+         tempo_fim = DATE_ADD(NOW(), INTERVAL ? MINUTE)
+       WHERE uuid = ?`,
+      [paymentId, qrCode, process.env.MINUTES_FREE || 10, uuid]
+    );
+
+    return result.affectedRows > 0;
+  } catch (err) {
+    console.error('Erro ao atualizar dados de pagamento:', err);
+    throw err;
+  } finally {
+    if (connection) await connection.release();
+  }
+};
+const getDadosCompletos = async (uuid) => {
+  let connection;
+  try {
+    connection = await db.getConnection();
+    const [rows] = await connection.query(
+      `SELECT 
+        idpayment, 
+        payment_qr_code, 
+        tempo_inicio, 
+        tempo_fim,
+        updated_at
+       FROM usuarios 
+       WHERE uuid = ?`,
+      [uuid]
+    );
+    return rows[0];
+  } catch (err) {
+    console.error('Erro ao buscar dados:', err);
+    throw err;
+  } finally {
+    if (connection) await connection.release();
+  }
+};
+const getDadosParaQRCode = async (uuid) => {
+  let connection;
+  try {
+    connection = await db.getConnection();
+    const [rows] = await connection.query(
+      `SELECT idpayment, payment_qr_code, tempo_fim 
+       FROM usuarios 
+       WHERE uuid = ? 
+       LIMIT 1`,
+      [uuid]
+    );
+    return rows[0];
+  } catch (err) {
+    console.error('Erro ao buscar dados para QR Code:', err);
+    throw err;
+  } finally {
+    if (connection) await connection.release();
+  }
+};
+const atualizarQRCodeETempo = async (uuid, paymentId, qrCode, minutos) => {
+  let connection;
+  try {
+    connection = await db.getConnection();
+    await connection.query(
+      `UPDATE usuarios 
+       SET idpayment = ?, 
+           payment_qr_code = ?,
+           tempo_fim = DATE_ADD(NOW(), INTERVAL ? MINUTE)
+       WHERE uuid = ?`,
+      [paymentId, qrCode, minutos, uuid]
+    );
+  } catch (err) {
+    console.error('Erro ao atualizar QR Code e tempo:', err);
+    throw err;
+  } finally {
+    if (connection) await connection.release();
+  }
+};
 module.exports = {
   verificarUsuario,
   atualizarTempoFim,
   verificarOuAtualizarUsuario,
-  getQRCodeByUser, 
-  saveQRCode
+  getQRCodeByUser,
+  saveQRCode,
+  limparDadosPagamento,
+  getDadosCompletos,
+  atualizarDadosPagamento,
+  getDadosParaQRCode,
+  atualizarQRCodeETempo
 };

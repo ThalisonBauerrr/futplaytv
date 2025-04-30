@@ -3,229 +3,241 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Assistir Jogo - SportStream Pro</title>
+  <title>Futplay.TV - HOME</title>
   <link rel="stylesheet" href="/css/main.css">
   <link rel="stylesheet" href="/css/home/navigation.css">
+  <link rel="icon" href="/assets/favicon.ico" type="image/x-icon">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <style>
-    /* Estilos personalizados para o player */
-    .player-container {
-      display: grid;
-      grid-template-columns: 1fr 350px;
-      gap: 2rem;
-    }
-    
-    .video-main {
-      width: 100%;
-    }
-    
-    .video-player {
-      width: 100%;
-      aspect-ratio: 16/9;
-      background: #000;
-      border-radius: 12px;
-      overflow: hidden;
-      position: relative;
-      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
-    }
-    
-    .player-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1.5rem;
-    }
-    
-    .match-teams {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-    }
-    
-    .team {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-    
-    .team-logo {
-      width: 40px;
-      height: 40px;
-    }
-    
-    .vs {
-      font-weight: bold;
-      color: var(--accent-primary);
-      margin: 0 0.5rem;
-    }
-    
-    .match-score {
-      background: var(--accent-primary);
-      color: var(--bg-darker);
-      padding: 0.25rem 0.75rem;
-      border-radius: 4px;
-      font-weight: bold;
-    }
-    
-    /* Sidebar direita com jogos */
-    .live-games-sidebar {
-      background: var(--bg-light);
-      padding: 1.5rem;
-      border-radius: 12px;
-      border: 1px solid rgba(255, 255, 255, 0.05);
-      height: fit-content;
-    }
-    
-    .sidebar-title {
-      color: var(--accent-primary);
-      margin-bottom: 1.5rem;
-      font-size: 1.2rem;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-    
-    .sidebar-title i {
-      font-size: 1rem;
-    }
-    
-    /* Cards de jogos ao vivo */
-    .live-game-card {
-      background: var(--bg-darker);
-      border-radius: 8px;
-      padding: 1rem;
-      margin-bottom: 1rem;
-      border: 1px solid rgba(255, 255, 255, 0.05);
-      transition: all 0.3s ease;
-    }
-    
-    .live-game-card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 5px 15px rgba(0, 255, 136, 0.1);
-    }
-    
-    .game-teams-small {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 0.5rem;
-    }
-    
-    .team-small {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      flex: 1;
-    }
-    
-    .team-logo-small {
-      width: 24px;
-      height: 24px;
-    }
-    
-    .vs-small {
-      font-weight: bold;
-      color: var(--accent-primary);
-      margin: 0 0.5rem;
-      font-size: 0.8rem;
-    }
-    
-    .game-score {
-      font-weight: bold;
-      font-size: 0.9rem;
-    }
-    
-    .game-status {
-      font-size: 0.75rem;
-      color: var(--accent-primary);
-      margin-bottom: 0.5rem;
-      display: flex;
-      align-items: center;
-      gap: 0.25rem;
-    }
-    
-    .game-status.live {
-      color: #ff5555;
-    }
-    
-    .game-status.live::before {
-      content: '';
-      display: inline-block;
-      width: 6px;
-      height: 6px;
-      background: #ff5555;
-      border-radius: 50%;
-      margin-right: 0.25rem;
-      animation: pulse 1.5s infinite;
-    }
-    
-    .watch-btn-small {
-      display: block;
-      width: 100%;
-      padding: 0.5rem;
-      background: var(--accent-primary);
-      color: var(--bg-darker);
-      border: none;
-      border-radius: 4px;
-      font-size: 0.8rem;
-      font-weight: 600;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      text-decoration: none;
-    }
-    
-    .watch-btn-small:hover {
-      background: #00e676;
-      transform: translateY(-2px);
-    }
-    
-    /* Informações do jogo principal */
-    .player-info {
-      margin-top: 2rem;
-    }
-    
-    .info-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 1rem;
-      margin-top: 1rem;
-    }
-    
-    .info-item {
-      background: var(--bg-light);
-      padding: 0.75rem;
-      border-radius: 6px;
-      font-size: 0.85rem;
-      border: 1px solid rgba(255, 255, 255, 0.05);
-    }
-    
-    .info-label {
-      color: var(--text-secondary);
-      font-size: 0.75rem;
-      margin-bottom: 0.25rem;
-    }
-    
-    /* Responsividade */
-    @media (max-width: 992px) {
-      .player-container {
-        grid-template-columns: 1fr;
-      }
-      
-      .live-games-sidebar {
-        margin-top: 2rem;
-      }
-    }
-    
-    @keyframes pulse {
-      0% { opacity: 1; }
-      50% { opacity: 0.5; }
-      100% { opacity: 1; }
-    }
-  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
+
 <body>
+  <style>
+    
+/* Estilos personalizados para o player */
+.player-container {
+  display: grid;
+  grid-template-columns: 1fr 350px;
+  gap: 2rem;
+}
+
+.video-main {
+  width: 100%;
+}
+
+.video-player {
+  width: 100%;
+  aspect-ratio: 16/9;
+  background: #000;
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+}
+
+.player-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.match-teams {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.team {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.team-logo {
+  width: 40px;
+  height: 40px;
+}
+
+.vs {
+  font-weight: bold;
+  color: var(--accent-primary);
+  margin: 0 0.5rem;
+}
+
+.match-score {
+  background: var(--accent-primary);
+  color: var(--bg-darker);
+  padding: 0.25rem 0.75rem;
+  border-radius: 4px;
+  font-weight: bold;
+}
+
+/* Sidebar direita com jogos */
+.live-games-sidebar {
+  background: var(--bg-light);
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  height: fit-content;
+}
+
+.sidebar-title {
+  color: var(--accent-primary);
+  margin-bottom: 1.5rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sidebar-title i {
+  font-size: 1rem;
+}
+
+/* Cards de jogos ao vivo */
+.live-game-card {
+  background: var(--bg-darker);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.3s ease;
+}
+
+.live-game-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0, 255, 136, 0.1);
+}
+
+.game-teams-small {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.team-small {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  flex: 1;
+}
+
+.team-small span {
+  font-size: 0.9rem;
+  text-align: center;
+  order: 2; /* Garante que o texto fica abaixo */
+}
+
+.team-logo-small {
+  width: 24px;
+  height: 24px;
+  order: 1; /* Garante que o logo fica acima */
+}
+
+.vs-small {
+  font-weight: bold;
+  color: var(--accent-primary);
+  margin: 0 0.5rem;
+  font-size: 0.8rem;
+}
+
+.game-score {
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+.game-status {
+  font-size: 0.75rem;
+  color: var(--accent-primary);
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.game-status.live {
+  color: #ff5555;
+}
+
+.game-status.live::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background: #ff5555;
+  border-radius: 50%;
+  margin-right: 0.25rem;
+  animation: pulse 1.5s infinite;
+}
+
+.watch-btn-small {
+  display: block;
+  width: 100%;
+  padding: 0.5rem;
+  background: var(--accent-primary);
+  color: var(--bg-darker);
+  border: none;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+}
+
+.watch-btn-small:hover {
+  background: #00e676;
+  transform: translateY(-2px);
+}
+
+/* Informações do jogo principal */
+.player-info {
+  margin-top: 2rem;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.info-item {
+  background: var(--bg-light);
+  padding: 0.75rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.info-label {
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  margin-bottom: 0.25rem;
+}
+
+/* Responsividade */
+@media (max-width: 992px) {
+  .player-container {
+    grid-template-columns: 1fr;
+  }
+  
+  .live-games-sidebar {
+    margin-top: 2rem;
+  }
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+  </style>
   <%- include('../partials/header') %>
   <%- include('../partials/navigation', {qrCodeBase64: qrCodeBase64}) %>
   
@@ -267,43 +279,59 @@
 
         <div class="video-player stream-container">
           <!-- O iframe começa com a primeira URL do primeiro canal -->
+          <%
+          const streamUrl = (urls && urls[0] && urls[0].url) ? urls[0].url : '';
+          %>
+          
+          <% if (streamUrl) { %>
           <iframe 
             id="stream-iframe"
-            src="<%= urls[0].url %>"
-            sandbox="allow-scripts allow-same-origin allow-presentation"
+            src="<%= streamUrl %>"
             allow="fullscreen; encrypted-media; autoplay"
+            sandbox="allow-scripts allow-same-origin" 
             referrerpolicy="strict-origin-when-cross-origin"
-            allowfullscreen 
             frameborder="0">
           </iframe>
+          <% } else { %>
+            <div class="error-message">
+              <p>Não foi possível carregar o stream no momento.</p>
+            </div>
+          <% } %>
         </div>
         
         <!-- Overlay para capturar eventos -->
         <div class="player-overlay" id="player-overlay"></div>
         
         <div style="margin-top: 20px;">
-          <% if (urls && urls.length > 0) { %> <!-- Verifica se urls existe e é um array -->
+          <% if (urls && urls.length > 0) { %>
             <div class="channel-buttons">
-              <!-- Canal Principal -->
-              <button class="channel-btn active" id="main-channel-btn" data-channel="<%= urls[0].url %>">
-                <i class="fas fa-satellite-dish"></i> <%= urls[0].name %>
-              </button>
-              <button class="channel-btn" id="main-channel-btn" data-channel="<%= urls[0].url_alternative %>">
-                <i class="fas fa-satellite-dish"></i> <%= urls[0].name %> Alternativo
-              </button>
-              <!-- Canal Alternativo -->
-              <% if (urls.length > 1) { %>
-                <button class="channel-btn" id="alt-channel-btn" data-channel="<%= urls[1].url %>">
-                  <i class="fas fa-satellite"></i>  <%= urls[1].name %>
-                </button>
-                <button class="channel-btn" id="alt-channel-btn" data-channel="<%= urls[1].urlurl_alternative %>">
-                  <i class="fas fa-satellite"></i>  <%= urls[1].name %> Alternativo
-                </button>
-              <% } %>
+              <% urls.forEach((channel, index) => { %>
+                <!-- Verifica se existe URL principal -->
+                <% if (channel.url) { %>
+                  <button class="channel-btn <%= index === 0 ? 'active' : '' %>" 
+                          data-channel="<%= channel.url %>">
+                    <i class="fas fa-satellite-dish"></i> <%= channel.name %>
+                  </button>
+                <% } %>
+                
+                <!-- Verifica se existe URL alternativa -->
+                <% if (channel.url_alternative) { %>
+                  <button class="channel-btn" 
+                          data-channel="<%= channel.url_alternative %>">
+                    <i class="fas fa-satellite-dish"></i> <%= channel.name %> Alternativo
+                  </button>
+                <% } %>
+              <% }); %>
             </div>
           <% } else { %>
             <p>Nenhum canal disponível para transmissão.</p>
           <% } %>
+        </div>
+        
+        <!-- Debug: Mostrar todas as URLs disponíveis -->
+        <div style="display: none;">
+          <h4>Debug - URLs disponíveis:</h4>
+          <pre><%= JSON.stringify(urls, null, 2) %></pre>
         </div>
         
         
@@ -314,7 +342,7 @@
         <div class="player-info">
           <h2 class="player-info-title">
             <i class="fas fa-info-circle"></i>
-            Informações da Partida
+            Informações da Partida (DESENVOLVIMETO)
           </h2>
           
           <div class="info-grid">
@@ -380,14 +408,11 @@
                   <img src="<%= jogo.time_casa_imagem %>" alt="<%= jogo.time_casa_nome %>" class="team-logo-small">
                   <span><%= jogo.time_casa_nome %></span>
                 </div>
-                <span class="vs-small">VS</span>
+                <span><%= jogo.placar_casa %><span class="vs-small">VS</span><%= jogo.placar_visitante %></span>
                 <div class="team-small" style="justify-content: flex-end;">
                   <span><%= jogo.time_visitante_nome %></span>
                   <img src="<%= jogo.time_visitante_imagem %>" alt="<%= jogo.time_visitante_nome %>" class="team-logo-small">
                 </div>
-              </div>
-              <div class="game-score" style="text-align: center; margin-bottom: 0.75rem;">
-                <%= jogo.placar_casa %> - <%= jogo.placar_visitante %>
               </div>
               <a href="/player/<%= jogo.id %>" class="watch-btn-small">
                 <i class="fas fa-play"></i> Assistir
@@ -417,6 +442,24 @@
 
   <script src="/js/live.js"></script>
   <script>
+
+
+// Bloqueia botão direito + F12, Ctrl+Shift+I, etc.
+document.addEventListener('contextmenu', (e) => e.preventDefault());
+
+document.addEventListener('keydown', (e) => {
+    // Desativa F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U
+    if (
+        e.key === 'F12' ||
+        (e.ctrlKey && e.shiftKey && e.key === 'I') ||
+        (e.ctrlKey && e.shiftKey && e.key === 'J') ||
+        (e.ctrlKey && e.key === 'U') ||
+        (e.key === 'F12')
+    ) {
+        e.preventDefault();
+
+    }
+});
 // Seleciona todos os botões e o iframe
 const iframe = document.getElementById('stream-iframe');
   const buttons = document.querySelectorAll('.channel-btn');

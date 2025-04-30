@@ -8,7 +8,6 @@ async function buscarPlacaresExatos() {
       'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
     };
 
-    console.log('🔍 Acessando Placar Futebol...');
     const response = await axios.get(url, { headers });
     const $ = cheerio.load(response.data);
 
@@ -47,7 +46,7 @@ async function buscarPlacaresExatos() {
                   return 'indefinido';
                 })()
               };
-
+              
           // Validação básica
           if (partida.timeCasa && partida.timeVisitante) {
             resultados[competicaoIndex].partidas.push(partida);
@@ -58,7 +57,7 @@ async function buscarPlacaresExatos() {
       }
     });
 
-    console.log('✅ Dados extraídos com sucesso!');
+    console.log('✅ Dados das partidas extraídos com sucesso!');
     return resultados;
 
   } catch (error) {

@@ -1,25 +1,21 @@
 const db = require('../../config/database');
 
-
+// Função para obter a data atual no formato brasileiro (YYYY-MM-DD)
 function getDataBrasileira() {
   const agora = new Date();
-  
-  // Ajusta para o fuso horário de Brasília (UTC-3)
-  const offsetUTC = agora.getTimezoneOffset() * 60000; // Offset local em ms
-  const offsetBRT = -3 * 3600000; // BRT = UTC-3 (3 horas em ms)
-  const agoraBRT = new Date(agora.getTime() + offsetUTC + offsetBRT);
-  
-  // Formata como YYYY-MM-DD
-  const ano = agoraBRT.getFullYear();
-  const mes = String(agoraBRT.getMonth() + 1).padStart(2, '0');
-  const dia = String(agoraBRT.getDate()).padStart(2, '0');
-  
+  const ano = agora.getFullYear();
+  const mes = String(agora.getMonth() + 1).padStart(2, '0');
+  const dia = String(agora.getDate()).padStart(2, '0');
   return `${ano}-${mes}-${dia}`;
 }
+
 const buscarJogosDeHoje = async () => {
+  let connection;
   try {
+    connection = await db.getConnection();
     const hoje = getDataBrasileira();
-    const jogosHoje = await db.all(`
+
+    const [jogosHoje] = await connection.query(`
       SELECT 
         p.id,
         p.time_casa_nome,
@@ -36,7 +32,7 @@ const buscarJogosDeHoje = async () => {
         p.transmissoes,
         CASE 
           WHEN p.status = 'ao-vivo' THEN 1
-          WHEN p.status = 'aguardando' AND time(p.hora) > time('now') THEN 2
+          WHEN p.status = 'aguardando' AND TIME(p.hora) > TIME(CURRENT_TIME()) THEN 2
           WHEN p.status = 'intervalo' THEN 3
           WHEN p.status = 'aguardando' THEN 4
           ELSE 4
@@ -44,12 +40,12 @@ const buscarJogosDeHoje = async () => {
       FROM partidas p
       INNER JOIN competicoes c ON p.competicao_id = c.id
       WHERE p.data = ?
-      AND p.tempo != 'ENCERRADO'  -- EXCLUINDO JOGOS ENCERRADOS
+      AND p.tempo != 'ENCERRADO'
       AND p.tempo != 'SUSPENSO' 
       AND p.transmissoes IS NOT NULL 
       AND p.transmissoes != '[]' 
       AND p.transmissoes != 'null'
-      AND json_array_length(p.transmissoes) > 0
+      AND JSON_LENGTH(p.transmissoes) > 0
       ORDER BY ordem_exibicao, p.hora ASC
     `, [hoje]);
 
@@ -57,7 +53,7 @@ const buscarJogosDeHoje = async () => {
       try {
         return {
           ...jogo,
-          transmissoes: jogo.transmissoes ? JSON.parse(jogo.transmissoes.replace(/\\"/g, '"')) : []
+          transmissoes: jogo.transmissoes ? JSON.parse(jogo.transmissoes) : []
         };
       } catch (e) {
         console.error(`Erro ao processar transmissões do jogo ${jogo.id}:`, e);
@@ -72,51 +68,63 @@ const buscarJogosDeHoje = async () => {
   } catch (error) {
     console.error('Erro ao buscar jogos de hoje:', error);
     throw error;
+  } finally {
+    if (connection) connection.release();
   }
 };
 
 const buscarJogoPorId = async (id) => {
+  let connection;
   try {
-    const jogo = await new Promise((resolve, reject) => {
-      db.get(`
-        SELECT 
-          p.id,
-          p.time_casa_nome AS time_casa,
-          p.time_visitante_nome AS time_visitante,
-          p.time_casa_imagem AS time_casa_logo,
-          p.time_visitante_imagem AS time_visitante_logo,
-          c.nome_padrao AS competicao,
-          p.hora,
-          p.placar_casa,
-          p.placar_visitante,
-          p.tempo,
-          p.status,
-          p.transmissoes
-        FROM partidas p
-        INNER JOIN competicoes c ON p.competicao_id = c.id
-        WHERE p.id = ?
-      `, [id], (err, row) => {
-        if (err) reject(err);
-        else resolve(row);
-      });
-    });
+    connection = await db.getConnection();
+    const [jogos] = await connection.query(`
+      SELECT 
+        p.id,
+        p.time_casa_nome AS time_casa,
+        p.time_visitante_nome AS time_visitante,
+        p.time_casa_imagem AS time_casa_logo,
+        p.time_visitante_imagem AS time_visitante_logo,
+        c.nome_padrao AS competicao,
+        p.hora,
+        p.placar_casa,
+        p.placar_visitante,
+        p.tempo,
+        p.status,
+        p.transmissoes
+      FROM partidas p
+      INNER JOIN competicoes c ON p.competicao_id = c.id
+      WHERE p.id = ?
+      LIMIT 1
+    `, [id]);
 
+    if (jogos.length === 0) return null;
+
+    const jogo = jogos[0];
     if (jogo) {
-      jogo.transmissoes = jogo.transmissoes ? JSON.parse(jogo.transmissoes.replace(/\\"/g, '"')) : [];
+      try {
+        jogo.transmissoes = jogo.transmissoes ? JSON.parse(jogo.transmissoes) : [];
+      } catch (e) {
+        console.error(`Erro ao parsear transmissoes do jogo ${jogo.id}:`, e);
+        jogo.transmissoes = [];
+      }
     }
 
     return jogo;
   } catch (error) {
     console.error('Erro ao buscar jogo:', error);
     throw error;
+  } finally {
+    if (connection) connection.release();
   }
 };
 
 const buscarJogosAoVivo = async () => {
+  let connection;
   try {
+    connection = await db.getConnection();
     const hoje = getDataBrasileira();
-    console.log(hoje)
-    const jogosAoVivo = await db.all(`
+
+    const [jogosAoVivo] = await connection.query(`
       SELECT 
         p.id,
         p.time_casa_nome,
@@ -128,26 +136,27 @@ const buscarJogosAoVivo = async () => {
         p.tempo,
         p.status,
         p.transmissoes,
-        p.data
+        p.data,
+        c.nome_padrao AS competicao
       FROM partidas p
+      INNER JOIN competicoes c ON p.competicao_id = c.id
       WHERE p.data = ?
         AND (p.status = 'ao-vivo' OR p.status = 'intervalo')
-        AND p.tempo != 'ENCERRADO'  -- Excluindo jogos encerrados
+        AND p.tempo != 'ENCERRADO'
         AND p.tempo != 'SUSPENSO' 
         AND p.transmissoes IS NOT NULL 
         AND p.transmissoes != '[]' 
         AND p.transmissoes != 'null'
-        AND json_array_length(p.transmissoes) > 0
-      ORDER BY p.hora ASC  -- Ordenando pelos horários de início dos jogos
-      LIMIT 4  -- Limitando a 4 jogos
-    `, [hoje]); // Passando a data 'hoje' como parâmetro para a query
+        AND JSON_LENGTH(p.transmissoes) > 0
+      ORDER BY p.hora ASC
+      LIMIT 4
+    `, [hoje]);
 
-    // Processando os jogos ao vivo para formatar as transmissões
     const resultadosFormatados = jogosAoVivo.map(jogo => {
       try {
         return {
           ...jogo,
-          transmissoes: jogo.transmissoes ? JSON.parse(jogo.transmissoes.replace(/\\"/g, '"')) : []
+          transmissoes: jogo.transmissoes ? JSON.parse(jogo.transmissoes) : []
         };
       } catch (e) {
         console.error(`Erro ao processar transmissões do jogo ${jogo.id}:`, e);
@@ -158,63 +167,58 @@ const buscarJogosAoVivo = async () => {
       }
     });
 
-    // Retorna apenas os jogos com transmissões válidas
     return resultadosFormatados.filter(jogo => jogo.transmissoes.length > 0);
   } catch (error) {
     console.error('Erro ao buscar jogos ao vivo:', error);
     throw error;
+  } finally {
+    if (connection) connection.release();
   }
 };
 
 const verificarCanais = async (transmissoes) => {
+  let connection;
   try {
-    // Verificar se existem transmissões
     if (!transmissoes?.length) return [];
 
-    // Remover "(Alternativo)" e comparar tudo em minúsculas, mas manter os espaços
-    const transmissoesFormatadas = transmissoes.map((transmissao) => {
-      return transmissao
-        .replace(/\(Alternativo\)/i, '')  // Remove "(Alternativo)" (case-insensitive)
-        .toLowerCase();                  // Converte tudo para minúsculas
+    connection = await db.getConnection();
+    
+    // Criar duas versões de cada transmissão: com e sem (Alternativo)
+    const transmissoesFormatadas = transmissoes.flatMap(transmissao => {
+      const base = transmissao.trim().toLowerCase();
+      const semAlternativo = base.replace(/\(alternativo\)/i, '').trim();
+      return [base, semAlternativo];
     });
 
-    console.log("Transmissões formatadas:", transmissoesFormatadas);  // Exemplo: ['nossofutebol', 'dazn']
+    // Remover duplicados
+    const transmissoesUnicas = [...new Set(transmissoesFormatadas)];
 
-    // Depuração: Mostrar a consulta SQL antes de ser executada
-    const query = `
+    const placeholders = transmissoesUnicas.map(() => '?').join(',');
+
+    const [canais] = await connection.query(`
       SELECT 
+        c.id,
         c.name,
         c.url,
-        c.url_alternative
+        c.url_alternative,
+        c.logo
       FROM canais c
-      WHERE LOWER(c.name) IN (${transmissoesFormatadas.map(() => '?').join(',')})
+      WHERE LOWER(TRIM(c.name)) IN (${placeholders})
       ORDER BY c.name ASC
-    `;
-    console.log("Consulta SQL:", query);
-
-    // Consulta SQL para buscar canais ao vivo
-    const canaisAoVivo = await db.all(query, transmissoesFormatadas);  // Passando as transmissões formatadas para a consulta
-
-    // Verificação do que foi retornado
-    console.log("Canais encontrados:", canaisAoVivo);
-
-    // Verifica se não encontrou nenhum canal
-    if (canaisAoVivo.length === 0) {
-      console.log("Nenhum canal encontrado.");
-    }
-
-    return canaisAoVivo;
-
+    `, transmissoesUnicas);
+    return canais;
   } catch (error) {
     console.error('Erro ao buscar canais ao vivo:', error);
     throw error;
+  } finally {
+    if (connection) connection.release();
   }
 };
-
 
 module.exports = {
   buscarJogoPorId,
   buscarJogosDeHoje,
   verificarCanais,
-  buscarJogosAoVivo
+  buscarJogosAoVivo,
+  getDataBrasileira
 };
