@@ -15,10 +15,15 @@ async function atualizarCanais() {
         console.log('Iniciando atualização de canais...');
 
         browser = await puppeteer.launch({
-            headless: true, // Mude para false durante os testes
-            args: ['--no-sandbox', '--disable-setuid-sandbox'],
-            timeout: 30000
-        });
+            headless: true,
+            executablePath: '/usr/bin/chromium-browser', // Caminho para o Chromium/Chrome
+            args: [
+              '--no-sandbox',
+              '--disable-setuid-sandbox',
+              '--disable-dev-shm-usage' // Útil para sistemas com pouca memória
+            ],
+            timeout:30000
+          });
 
         const page = await browser.newPage();
         await page.setViewport({ width: 1280, height: 800 });

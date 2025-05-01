@@ -198,8 +198,13 @@ async function getjogos() {
 
     const browser = await puppeteer.launch({
         headless: true,
-        args: ['--no-sandbox', '--disable-setuid-sandbox']
-    });
+        executablePath: '/usr/bin/chromium-browser', // Caminho para o Chromium/Chrome
+        args: [
+          '--no-sandbox',
+          '--disable-setuid-sandbox',
+          '--disable-dev-shm-usage' // Útil para sistemas com pouca memória
+        ]
+      });
     const page = await browser.newPage();
     
     try {
