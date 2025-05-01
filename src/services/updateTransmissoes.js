@@ -136,7 +136,6 @@ async function updateTransmissoes() {
         console.log('Iniciando navegador...');
         browser = await puppeteer.launch({
             headless: true,
-            executablePath: '/usr/bin/chromium-browser', // Caminho para o Chromium/Chrome
             executablePath: '/snap/bin/chromium',
             args: [
               '--no-sandbox',
