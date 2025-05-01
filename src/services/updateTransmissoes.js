@@ -137,12 +137,14 @@ async function updateTransmissoes() {
         browser = await puppeteer.launch({
             headless: true,
             executablePath: '/usr/bin/chromium-browser', // Caminho para o Chromium/Chrome
+            executablePath: '/snap/bin/chromium',
             args: [
               '--no-sandbox',
               '--disable-setuid-sandbox',
-              '--disable-dev-shm-usage' // Útil para sistemas com pouca memória
+              '--disable-dev-shm-usage',  // Recomendado para servidores
+              '--single-process'         // Pode ajudar em sistemas com poucos recursos
             ],
-            timeout:30000
+            timeout: 300000
           });
 
         const page = await browser.newPage();
