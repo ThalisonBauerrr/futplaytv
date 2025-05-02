@@ -1,5 +1,6 @@
 const path = require('path');
-const helmet = require('helmet');  
+const helmet = require('helmet');
+const express = require('express');
 
 module.exports = (app) => {
   // Configurações de segurança reforçada
@@ -25,6 +26,7 @@ module.exports = (app) => {
           "'unsafe-inline'"
         ],
         imgSrc: [
+          "'self'",
           "https://playertv.net/",
           "https://reidoscanais.cc",
           "https://logodetimes.com",
