@@ -138,10 +138,13 @@ async function updateTransmissoes() {
             headless: true,
             executablePath: '/usr/bin/chromium-browser',
             args: [
-              '--no-sandbox',
-              '--disable-setuid-sandbox',
-              '--disable-dev-shm-usage',  // Recomendado para servidores
-              '--single-process'         // Pode ajudar em sistemas com poucos recursos
+                '--no-sandbox',
+                '--disable-setuid-sandbox',
+                '--disable-dev-shm-usage',
+                '--disable-gpu',
+                '--single-process',
+                '--no-zygote',
+                '--memory-pressure-off'   
             ],
             timeout: 300000
           });

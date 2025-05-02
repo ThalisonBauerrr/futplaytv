@@ -16,12 +16,15 @@ async function atualizarCanais() {
 
         browser = await puppeteer.launch({
             headless: true,
-            executablePath: '/snap/bin/chromium',
+            executablePath: '/usr/bin/chromium-browser',
             args: [
-              '--no-sandbox',
-              '--disable-setuid-sandbox',
-              '--disable-dev-shm-usage',  // Recomendado para servidores
-              '--single-process'         // Pode ajudar em sistemas com poucos recursos
+                '--no-sandbox',
+                '--disable-setuid-sandbox',
+                '--disable-dev-shm-usage',
+                '--disable-gpu',
+                '--single-process',
+                '--no-zygote',
+                '--memory-pressure-off'   
             ],
             timeout: 300000
           });
@@ -136,12 +139,15 @@ async function atualizarUrlAlternativa() {
 
         browser = await puppeteer.launch({
             headless: true, // Mude para false durante os testes
-            executablePath: '/snap/bin/chromium',
+            executablePath: '/usr/bin/chromium-browser',
             args: [
-              '--no-sandbox',
-              '--disable-setuid-sandbox',
-              '--disable-dev-shm-usage',  // Recomendado para servidores
-              '--single-process'         // Pode ajudar em sistemas com poucos recursos
+                '--no-sandbox',
+                '--disable-setuid-sandbox',
+                '--disable-dev-shm-usage',
+                '--disable-gpu',
+                '--single-process',
+                '--no-zygote',
+                '--memory-pressure-off'          
             ],
             timeout: 300000
           });
