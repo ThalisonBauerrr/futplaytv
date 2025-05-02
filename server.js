@@ -65,6 +65,10 @@ require('./config/server')(app); // Manter a configuração do servidor conforme
 // Configuração para servir arquivos estáticos
 app.use(express.static(path.join(__dirname, 'src', 'public')));
 
+app.use((req, res, next) => {
+  res.locals.baseUrl = 'http://144.217.185.7';
+  next();
+});
 // Configuração das views
 app.set('views', path.join(__dirname, 'src', 'views'));
 app.set('view engine', 'ejs');
