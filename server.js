@@ -1,8 +1,7 @@
-
-const {updateTransmissoes} = require('./src/services/updateTransmissoes');
+const { updateTransmissoes } = require('./src/services/updateTransmissoes');
 const registroDiarioService = require('./src/services/system');
-const {atualizarPlacaresNoBanco} = require('./src/services/atualizaPartida');
-const { atualizarStatusPagamentos } = require('./src/services/mercadoPagoService'); // Supondo que 
+const { atualizarPlacaresNoBanco } = require('./src/services/atualizaPartida');
+const { atualizarStatusPagamentos } = require('./src/services/mercadoPagoService');
 
 const express = require('express');
 const session = require('express-session');
@@ -10,135 +9,139 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 const { v4: uuidv4 } = require('uuid');
 const flash = require('connect-flash');
-const cron = require('node-cron');  // Adiciona a dependência do node-cron
+const cron = require('node-cron');
+const helmet = require('helmet'); // Adicione para segurança
+const compression = require('compression'); // Adicione para performance
+
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
-// Configuração para ler cookies (Deve vir antes de qualquer outra lógica que use os cookies)
-app.use(cookieParser());  // Middleware para ler cookies
-app.use(express.urlencoded({ extended: true })); // Para formulários HTML
-app.use(express.json()); // Para APIs JSON
+// Configurações de Segurança
+app.use(helmet());
+app.use(compression());
 
-// Middleware para gerar e armazenar um ID único
-app.use((req, res, next) => {
-  let uuidUsuario = req.cookies.uuid;
+// Configurações básicas
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
-  if (!uuidUsuario) {
-    // Se o UUID não estiver no cookie, gera um novo UUID
-    uuidUsuario = uuidv4();
-
-    // Armazenar o UUID no cookie com tempo de expiração de 1 hora
-    res.cookie('uuid', uuidUsuario, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', // Garante que o cookie seja enviado apenas por HTTPS
-      maxAge: 3600000, // 1 hora
-    });
-  }
-
-  // Armazenar o UUID para ser usado nas próximas requisições
-  req.uuidUsuario = uuidUsuario;
-
-  next(); // Passa para a próxima função/middleware
-});
-
-// Configuração da sessão
+// Configuração de sessão melhorada
 app.use(session({
-  secret: 'sua-chave-secreta', // Troque por uma chave segura
+  secret: process.env.SESSION_SECRET || 'sua-chave-secreta-forte',
   resave: false,
-  saveUninitialized: true,
-  cookie: { secure: false } // Defina como true se estiver usando HTTPS
+  saveUninitialized: false,
+  cookie: { 
+    secure: process.env.NODE_ENV === 'production',
+    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000 // 1 dia
+  }
 }));
 
-// Configuração do flash
+// Flash messages
 app.use(flash());
 
-// Middleware para disponibilizar flash messages para todas as views
+// Middleware para variáveis globais
 app.use((req, res, next) => {
+  // UUID
+  if (!req.cookies.uuid) {
+    const uuidUsuario = uuidv4();
+    res.cookie('uuid', uuidUsuario, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 3600000
+    });
+    req.uuidUsuario = uuidUsuario;
+  } else {
+    req.uuidUsuario = req.cookies.uuid;
+  }
+
+  // Flash messages
   res.locals.success = req.flash('success');
   res.locals.error = req.flash('error');
   next();
 });
 
-// Configurações adicionais do servidor (não alterei)
-require('./config/server')(app); // Manter a configuração do servidor conforme já está
-
-// Configuração para servir arquivos estáticos
-app.use(express.static(path.join(__dirname, 'src', 'public')));
+// Configuração de arquivos estáticos otimizada
 app.use('/public', express.static(path.join(__dirname, 'src', 'public'), {
-  maxAge: '1d' // Cache de 1 dia (opcional)
+  maxAge: '1d',
+  setHeaders: (res, path) => {
+    if (path.endsWith('.css')) {
+      res.set('Content-Type', 'text/css');
+    }
+  }
 }));
 
-// Configuração das views
+// Configuração de views
 app.set('views', path.join(__dirname, 'src', 'views'));
 app.set('view engine', 'ejs');
 
-// Importando as rotas
-const adminRoutes = require('./src/routes/adminRoutes');
-// Configuração das rotas para o stream
+// Rotas
 app.use('/', require('./src/routes/streamRoutes'));
-app.use('/admin', adminRoutes);
+app.use('/admin', require('./src/routes/adminRoutes'));
 
-
-// Rotina de inicialização
-async function iniciarRotinas() {
-  console.log('🔄 Iniciando rotina diária...');
-  const resultado = await registroDiarioService.executarRotinaDiaria();
-
-    if(resultado.status==="skipped"){
-      console.log(resultado.message)
-    }else if(resultado.status==="success"){
-      console.log(resultado.message)
-      await updateTransmissoes()
+// Rotinas agendadas
+const iniciarRotinas = async () => {
+  try {
+    console.log('🔄 Iniciando rotina diária...');
+    const resultado = await registroDiarioService.executarRotinaDiaria();
+    
+    if (resultado.status === "success") {
+      await updateTransmissoes();
     }
-}
+    console.log(resultado.message);
+  } catch (error) {
+    console.error('❌ Erro na rotina diária:', error);
+  }
+};
 
-// Agenda a rotina diária às 1:00 AM (Brasília)
-async function agendarRotinaDiaria() {
+const agendarRotinas = () => {
+  // Rotina diária às 1:00 AM
   cron.schedule('0 1 * * *', async () => {
     console.log('⏰ Disparando rotina programada (1:00 AM BRT)');
-    await registroDiarioService.executarRotinaDiaria();
-    await updateTransmissoes()
+    try {
+      await registroDiarioService.executarRotinaDiaria();
+      await updateTransmissoes();
+    } catch (error) {
+      console.error('❌ Erro na rotina agendada:', error);
+    }
   }, {
-    scheduled: true,
     timezone: "America/Sao_Paulo"
   });
-}
 
-function crons() {
-  cron.schedule('*/1 * * * *', async () => { // Rodando a cada 5 minutos
+  // Rotina a cada 5 minutos
+  cron.schedule('*/5 * * * *', async () => {
     try {
-      //console.log('🔄 Verificando status de pagamentos...');
-      const resultado = await atualizarStatusPagamentos();
-      console.log(`🔄 ${resultado.atualizados}/${resultado.total} pagamentos verificados`);
-    } catch (error) {
-      console.error('❌ Erro ao verificar pagamentos:', error.message);
-    }
-
-    try {
+      const pagamentos = await atualizarStatusPagamentos();
+      console.log(`🔄 ${pagamentos.atualizados}/${pagamentos.total} pagamentos verificados`);
+      
       await atualizarPlacaresNoBanco();
-      //console.log(`✅ ${atualizadas} placares atualizados com sucesso!`);
     } catch (error) {
-      console.error('❌ Erro ao atualizar placares:', error.message);
+      console.error('❌ Erro nas rotinas periódicas:', error);
     }
-    
   }, {
     timezone: "America/Sao_Paulo"
   });
-}
+};
 
-app.get('/', (req, res) => {
-  res.send('Servidor rodando!');
+// Rota básica de saúde
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'healthy' });
 });
 
-
-// No final do arquivo, modifique a parte que inicia o servidor:
-app.listen(3000, '0.0.0.0', async () => {
-  console.log(`Servidor rodando em http://localhost:${port}`);
+// Inicialização do servidor
+app.listen(port, '0.0.0.0', async () => {
+  console.log(`🚀 Servidor rodando em http://localhost:${port}`);
   
-  // Executa na inicialização
   await iniciarRotinas();
+  agendarRotinas();
+});
 
-  // Agenda as execuções periódicas
-  agendarRotinaDiaria();
-  crons();
+// Tratamento de erros não capturados
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught Exception:', error);
+  process.exit(1);
 });
