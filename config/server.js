@@ -1,6 +1,5 @@
 const path = require('path');
-const helmet = require('helmet');
-const express = require('express');
+const helmet = require('helmet');  
 
 module.exports = (app) => {
   // Configurações de segurança reforçada
@@ -12,12 +11,12 @@ module.exports = (app) => {
           "'self'",
           "'unsafe-inline'",
           "https://cdnjs.cloudflare.com",
-          "https://fonts.googleapis.com"  // Adicionando Google Fonts
+          "https://fonts.googleapis.com"
         ],
         fontSrc: [
           "'self'",
-          "https://cdnjs.cloudflare.com",
-          "https://fonts.gstatic.com"     // Domínio das fontes do Google
+          "https://cdnjs.cloudflare.com", 
+          "https://fonts.gstatic.com"
         ],
         scriptSrc: [
           "'self'",
@@ -26,8 +25,6 @@ module.exports = (app) => {
           "'unsafe-inline'"
         ],
         imgSrc: [
-          "'self'",
-          "data:",
           "https://playertv.net/",
           "https://reidoscanais.cc",
           "https://logodetimes.com",
@@ -56,12 +53,14 @@ module.exports = (app) => {
           "https://entitlements.jwplayer.com/",
           "https://meuplayeronlinehd.com/",
           "https://nossoplayeronlinehd.com/",
-        ]
-        
+        ],
+        upgradeInsecureRequests: null // Importante para mixed content
       }
-    }
+    },
+    hsts: false // Desativa pois estamos usando HTTP
   }));
 
+  // Configurações de views (mantido)
   app.set('views', [
     path.join(__dirname, '../src/views/home'),
     path.join(__dirname, '../src/views'),
@@ -69,11 +68,11 @@ module.exports = (app) => {
   ]);
   
   app.set('view engine', 'ejs');
-  
-  // Middleware para arquivos estáticos
-  app.use(express.static(path.join(__dirname, '../src/public'), {
-    setHeaders: (res) => {
-      res.set('X-Content-Type-Options', 'nosniff');
-    }
-  }))
+
+  // Middleware para desativar headers problemáticos
+  app.use((req, res, next) => {
+    res.removeHeader('Origin-Agent-Cluster');
+    res.set('X-Content-Type-Options', 'nosniff');
+    next();
+  });
 };
