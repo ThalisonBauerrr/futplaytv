@@ -1,4 +1,5 @@
 
+#!/usr/bin/env node
 const {updateTransmissoes} = require('./src/services/updateTransmissoes');
 const registroDiarioService = require('./src/services/system');
 const {atualizarPlacaresNoBanco} = require('./src/services/atualizaPartida');
