@@ -60,17 +60,7 @@ app.use((req, res, next) => {
   res.locals.error = req.flash('error');
   next();
 });
-
-// Configuração de arquivos estáticos otimizada
-app.use('/public', express.static(path.join(__dirname, 'src', 'public'), {
-  maxAge: '1d',
-  setHeaders: (res, path) => {
-    if (path.endsWith('.css')) {
-      res.set('Content-Type', 'text/css');
-    }
-  }
-}));
-
+app.use('/css', express.static(path.join(__dirname, 'src', 'public', 'css')));
 // Configuração de views
 app.set('views', path.join(__dirname, 'src', 'views'));
 app.set('view engine', 'ejs');
