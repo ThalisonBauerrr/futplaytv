@@ -1,6 +1,5 @@
 const path = require('path');
 const helmet = require('helmet');
-const express = require('express');
 
 module.exports = (app) => {
   // Configurações de segurança reforçada
@@ -27,6 +26,7 @@ module.exports = (app) => {
         ],
         imgSrc: [
           "'self'",
+          "data:",
           "https://playertv.net/",
           "https://reidoscanais.cc",
           "https://logodetimes.com",
@@ -34,7 +34,7 @@ module.exports = (app) => {
           "https://embed.tvcdn.space/",
           "https://frontendapiapp.blob.core.windows.net/",
           "https://ge.globo.com/",
-          "https://s.sde.globo.com", // Remove trailing slash
+          "https://*.sde.globo.com", // Domínio corrigido
           "https://embedtv-0.icu/",
           "https://placardefutebol.com.br/",
           "https://meuplayeronlinehd.com/",
