@@ -33,7 +33,7 @@ module.exports = (app) => {
           "https://embed.tvcdn.space/",
           "https://frontendapiapp.blob.core.windows.net/",
           "https://ge.globo.com/",
-          "https://*.sde.globo.com", // Domínio corrigido
+          "https://s.sde.globo.com/", // Domínio corrigido
           "https://embedtv-0.icu/",
           "https://placardefutebol.com.br/",
           "https://meuplayeronlinehd.com/",
