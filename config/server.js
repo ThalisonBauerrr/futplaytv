@@ -56,6 +56,7 @@ module.exports = (app) => {
           "https://entitlements.jwplayer.com/",
           "https://meuplayeronlinehd.com/",
           "https://nossoplayeronlinehd.com/",
+          
         ]
         
       }

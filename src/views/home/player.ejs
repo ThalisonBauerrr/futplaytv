@@ -288,7 +288,7 @@
             id="stream-iframe"
             src="<%= streamUrl %>"
             allow="fullscreen; encrypted-media; autoplay"
-            sandbox="allow-scripts allow-same-origin" 
+          
             referrerpolicy="strict-origin-when-cross-origin"
             frameborder="0">
           </iframe>
@@ -299,7 +299,7 @@
           <% } %>
         </div>
         
-        <!-- Overlay para capturar eventos -->
+        <!-- Overlay para capturar eventos         sandbox="allow-scripts allow-same-origin"   -->
         <div class="player-overlay" id="player-overlay"></div>
         
         <div style="margin-top: 20px;">
