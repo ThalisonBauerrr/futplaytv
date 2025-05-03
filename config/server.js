@@ -1,21 +1,23 @@
 const path = require('path');
 const helmet = require('helmet');
+const express = require('express');
 
 module.exports = (app) => {
   // Configurações de segurança reforçada
   app.use(helmet({
     contentSecurityPolicy: {
       directives: {
+        defaultSrc: ["'self'"],
         styleSrc: [
           "'self'",
           "'unsafe-inline'",
           "https://cdnjs.cloudflare.com",
-          "https://fonts.googleapis.com"
+          "https://fonts.googleapis.com"  // Adicionando Google Fonts
         ],
         fontSrc: [
           "'self'",
-          "https://cdnjs.cloudflare.com", 
-          "https://fonts.gstatic.com"
+          "https://cdnjs.cloudflare.com",
+          "https://fonts.gstatic.com"     // Domínio das fontes do Google
         ],
         scriptSrc: [
           "'self'",
@@ -33,12 +35,13 @@ module.exports = (app) => {
           "https://embed.tvcdn.space/",
           "https://frontendapiapp.blob.core.windows.net/",
           "https://ge.globo.com/",
-          "https://s.sde.globo.com/", // Domínio corrigido
+          "https://s.sde.globo.com/",
           "https://embedtv-0.icu/",
           "https://placardefutebol.com.br/",
           "https://meuplayeronlinehd.com/",
           "https://nossoplayeronlinehd.com/",
           "https://www.google.com/",
+          
         ],
         frameSrc: [
           "'self'",
@@ -53,14 +56,12 @@ module.exports = (app) => {
           "https://entitlements.jwplayer.com/",
           "https://meuplayeronlinehd.com/",
           "https://nossoplayeronlinehd.com/",
-        ],
-        upgradeInsecureRequests: null // Importante para mixed content
+        ]
+        
       }
-    },
-    hsts: false // Desativa pois estamos usando HTTP
+    }
   }));
 
-  // Configurações de views (mantido)
   app.set('views', [
     path.join(__dirname, '../src/views/home'),
     path.join(__dirname, '../src/views'),
@@ -68,11 +69,11 @@ module.exports = (app) => {
   ]);
   
   app.set('view engine', 'ejs');
-
-  // Middleware para desativar headers problemáticos
-  app.use((req, res, next) => {
-    res.removeHeader('Origin-Agent-Cluster');
-    res.set('X-Content-Type-Options', 'nosniff');
-    next();
-  });
+  
+  // Middleware para arquivos estáticos
+  app.use(express.static(path.join(__dirname, '../src/public'), {
+    setHeaders: (res) => {
+      res.set('X-Content-Type-Options', 'nosniff');
+    }
+  }))
 };
