@@ -34,13 +34,12 @@ module.exports = (app) => {
           "https://embed.tvcdn.space/",
           "https://frontendapiapp.blob.core.windows.net/",
           "https://ge.globo.com/",
-          "https://s.sde.globo.com/",
+          "https://s.sde.globo.com", // Remove trailing slash
           "https://embedtv-0.icu/",
           "https://placardefutebol.com.br/",
           "https://meuplayeronlinehd.com/",
           "https://nossoplayeronlinehd.com/",
           "https://www.google.com/",
-          
         ],
         frameSrc: [
           "'self'",
