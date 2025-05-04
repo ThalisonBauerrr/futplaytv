@@ -2,16 +2,18 @@
 const {updateTransmissoes} = require('./src/services/updateTransmissoes');
 const registroDiarioService = require('./src/services/system');
 const {atualizarPlacaresNoBanco} = require('./src/services/atualizaPartida');
-const { atualizarStatusPagamentos } = require('./src/services/mercadoPagoService'); // Supondo que 
-
+const { atualizarStatusPagamentos } = require('./src/services/mercadoPagoService');
 const express = require('express');
 const session = require('express-session');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const { v4: uuidv4 } = require('uuid');
 const flash = require('connect-flash');
+const { createProxyMiddleware } = require('http-proxy-middleware');
+
 const cron = require('node-cron');  // Adiciona a dependência do node-cron
 const app = express();
+const cors = require('cors');
 const port = 3000;
 
 // Configuração para ler cookies (Deve vir antes de qualquer outra lógica que use os cookies)
@@ -59,6 +61,7 @@ app.use((req, res, next) => {
   next();
 });
 
+app.use(cors());
 // Configurações adicionais do servidor (não alterei)
 require('./config/server')(app); // Manter a configuração do servidor conforme já está
 
@@ -70,11 +73,40 @@ app.set('views', path.join(__dirname, 'src', 'views'));
 app.set('view engine', 'ejs');
 
 // Importando as rotas
-const adminRoutes = require('./src/routes/adminRoutes');
-// Configuração das rotas para o stream
-app.use('/', require('./src/routes/streamRoutes'));
-app.use('/admin', adminRoutes);
+// Proxy reverso para nossoplayeronlinehd.com
+app.use('/proxy-player', createProxyMiddleware({
+  target: 'https://nossoplayeronlinehd.com',
+  changeOrigin: true,
+  selfHandleResponse: true,
+  pathRewrite: {
+    '^/proxy-player': '', // Remove "/proxy-player" da URL antes de encaminhar
+  },
+  onProxyRes: async (proxyRes, req, res) => {
+    const contentType = proxyRes.headers['content-type'] || '';
 
+    if (contentType.includes('text/html')) {
+      let body = Buffer.from([]);
+      proxyRes.on('data', (chunk) => {
+        body = Buffer.concat([body, chunk]);
+      });
+
+      proxyRes.on('end', () => {
+        let html = body.toString('utf8');
+
+        // Remove o script sandbox-detection.js
+        html = html.replace(/<script[^>]*src=["']\/assets\/sandbox-detection\.js["'][^>]*><\/script>/gi, '');
+
+        res.setHeader('content-type', 'text/html');
+        res.statusCode = proxyRes.statusCode;
+        res.end(html);
+      });
+    } else {
+      proxyRes.pipe(res);
+    }
+  }
+}));
+app.use('/', require('./src/routes/streamRoutes'));
+app.use('/admin', require('./src/routes/adminRoutes'));
 
 // Rotina de inicialização
 async function iniciarRotinas() {
@@ -93,15 +125,16 @@ async function iniciarRotinas() {
 async function agendarRotinaDiaria() {
   cron.schedule('0 1 * * *', async () => {
     console.log('⏰ Disparando rotina programada (1:00 AM BRT)');
-    await registroDiarioService.executarRotinaDiaria();
-    await updateTransmissoes()
+    await iniciarRotinas();
   }, {
     scheduled: true,
     timezone: "America/Sao_Paulo"
   });
 }
 
-function crons() {
+
+
+async function crons() {
   cron.schedule('*/1 * * * *', async () => { // Rodando a cada 5 minutos
     try {
       //console.log('🔄 Verificando status de pagamentos...');
@@ -131,11 +164,7 @@ app.get('/', (req, res) => {
 // No final do arquivo, modifique a parte que inicia o servidor:
 app.listen(3000, '0.0.0.0', async () => {
   console.log(`Servidor rodando em http://localhost:${port}`);
-  
-  // Executa na inicialização
   await iniciarRotinas();
-
-  // Agenda as execuções periódicas
-  agendarRotinaDiaria();
-  crons();
+  await agendarRotinaDiaria();
+  await crons();
 });

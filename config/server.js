@@ -11,8 +11,9 @@ module.exports = (app) => {
         styleSrc: [
           "'self'",
           "'unsafe-inline'",
-          "https://cdnjs.cloudflare.com",
-          "https://fonts.googleapis.com"  // Adicionando Google Fonts
+          "https://cdnjs.cloudflare.com/",
+          "https://fonts.googleapis.com/",
+          "https://vjs.zencdn.net/",
         ],
         fontSrc: [
           "'self'",
@@ -22,6 +23,10 @@ module.exports = (app) => {
         scriptSrc: [
           "'self'",
           "https://cdnjs.cloudflare.com",
+          "https://entitlements.jwplayer.com/",
+          "https://cdn.bcdn.zip/tv/scriptcanais26.js",
+          "https://vjs.zencdn.net/",
+          "https://cdnjs.cloudflare.com/",
           "https://entitlements.jwplayer.com/",
           "'unsafe-inline'"
         ],
@@ -41,6 +46,8 @@ module.exports = (app) => {
           "https://meuplayeronlinehd.com/",
           "https://nossoplayeronlinehd.com/",
           "https://www.google.com/",
+          "https://netcinez.ch/",
+          "https://tvl.nectinez.ch/"
           
         ],
         frameSrc: [
@@ -56,7 +63,9 @@ module.exports = (app) => {
           "https://entitlements.jwplayer.com/",
           "https://meuplayeronlinehd.com/",
           "https://nossoplayeronlinehd.com/",
-          
+          "https://netcinez.ch/",
+          "https://tvl.nectinez.ch/"
+
         ]
         
       }

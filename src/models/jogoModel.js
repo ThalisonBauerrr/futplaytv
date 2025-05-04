@@ -8,7 +8,6 @@ function getDataBrasileira() {
   const dia = String(agora.getDate()).padStart(2, '0');
   return `${ano}-${mes}-${dia}`;
 }
-
 const buscarJogosDeHoje = async () => {
   let connection;
   try {
@@ -46,6 +45,7 @@ const buscarJogosDeHoje = async () => {
       AND p.transmissoes != '[]' 
       AND p.transmissoes != 'null'
       AND JSON_LENGTH(p.transmissoes) > 0
+      AND NOT (p.status = 'aguardando' AND p.hora <= (CURRENT_TIME() - INTERVAL 3 HOUR))
       ORDER BY ordem_exibicao, p.hora ASC
     `, [hoje]);
 

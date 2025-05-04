@@ -138,7 +138,7 @@ async function atualizarUrlAlternativa() {
         console.log('\nIniciando atualização de URL alternativa dos canais...');
 
         browser = await puppeteer.launch({
-            headless: true, // Mude para false durante os testes
+            headless: true,
             executablePath: '/usr/bin/chromium-browser',
             args: [
                 '--no-sandbox',

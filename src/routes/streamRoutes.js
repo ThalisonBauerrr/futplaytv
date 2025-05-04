@@ -37,4 +37,5 @@ router.get('/atualizar-jogo/:id', async (req, res) => {
       res.status(500).json({ error: 'Erro ao buscar jogo' });
     }
   });
+
 module.exports = router;
