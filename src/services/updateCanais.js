@@ -15,7 +15,7 @@ async function atualizarCanais() {
         console.log('Iniciando atualização de canais...');
 
         browser = await puppeteer.launch({
-            headless: true,
+            headless: true, 
             executablePath: '/usr/bin/chromium-browser',
             args: [
                 '--no-sandbox',
@@ -139,7 +139,7 @@ async function atualizarUrlAlternativa() {
 
         browser = await puppeteer.launch({
             headless: true,
-            executablePath: '/usr/bin/chromium-browser',
+            executablePath: '/usr/bin/chromium-browser', 
             args: [
                 '--no-sandbox',
                 '--disable-setuid-sandbox',
