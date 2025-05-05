@@ -33,8 +33,8 @@ class Stream {
         SELECT 
           id,
           nome AS name,
-          url,
-          url_alternative AS alternativeUrl,
+          url_0,
+          url_1 AS alternativeUrl,
           logo
         FROM canais 
         WHERE id = ?

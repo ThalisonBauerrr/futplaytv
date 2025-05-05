@@ -221,7 +221,11 @@
   font-size: 0.75rem;
   margin-bottom: 0.25rem;
 }
-
+.ad-image {
+  width: 20px;
+  height: 20px;
+  margin-left: 10px;
+}
 /* Responsividade */
 @media (max-width: 992px) {
   .player-container {
@@ -279,62 +283,65 @@
         </div>
 
         <div class="video-player stream-container">
-          <!-- O iframe começa com a primeira URL do primeiro canal -->
+          <!-- Iframe inicia com a primeira URL do primeiro canal -->
           <%
-          const streamUrl = (urls && urls[0] && urls[0].url) ? urls[0].url : '';
-          %>
-          
-          <% if (streamUrl) { %>
+          let streamInicial = null;
+        
+          if (canais && canais.length > 0) {
+            streamInicial = canais[0].urls.find(u => u.index === 0) || canais[0].urls.find(u => u.index === 4);
+          }
+        
+          const urlInicial = streamInicial?.url;
+          const indexInicial = streamInicial?.index;
+        %>
+        
+        <% if (streamInicial) { %>
           <iframe 
             id="stream-iframe"
-            src="<%= streamUrl %>"
+            src="<%= urlInicial %>"
             referrerpolicy="strict-origin-when-cross-origin"
             allow="autoplay"
-            frameborder="0">
+            frameborder="0"
+            allowfullscreen
+            <%= indexInicial <= 3 ? 'sandbox="allow-scripts allow-same-origin"' : '' %>>
           </iframe>
-          <% } else { %>
-            <div class="error-message">
-              <p>Não foi possível carregar o stream no momento.</p>
-            </div>
-          <% } %>
+        <% } else { %>
+          <div class="error-message">
+            <p>Não foi possível carregar o stream no momento.</p>
+          </div>
+        <% } %>
         </div>
         
-        <!-- Overlay para capturar eventos 
-            sandbox="allow-scripts allow-same-origin" -->
+        <!-- Overlay para capturar eventos se necessário -->
         <div class="player-overlay" id="player-overlay"></div>
         
         <div style="margin-top: 20px;">
-          <% if (urls && urls.length > 0) { %>
+          <% if (canais && canais.length > 0) { %>
             <div class="channel-buttons">
-              <% urls.forEach((channel, index) => { %>
-                <!-- Verifica se existe URL principal -->
-                <% if (channel.url) { %>
-                  <button class="channel-btn <%= index === 0 ? 'active' : '' %>" 
-                          data-channel="<%= channel.url %>">
-                    <i class="fas fa-satellite-dish"></i> <%= channel.name %>
+              <% canais.forEach((canal) => { %>
+                <% canal.urls.forEach((stream) => { 
+                  const isAtivo = stream.url === urlInicial;
+                  const showAdImage = stream.index >= 4 && stream.index <= 6;
+                %>
+                  <button class="channel-btn <%= isAtivo ? 'active' : '' %>" 
+                          data-channel="<%= stream.url %>"
+                          data-index-original="<%= stream.index %>">
+                    <i class="fas fa-satellite-dish"></i>
+                    <%= canal.name %>
+                    <% if (stream.index > 0) { %>
+                      <span> Alternativo <%= stream.index %></span>
+                    <% } %>
+                    <% if (showAdImage) { %>  <!-- Sempre exibe a imagem para canais com índice 4-6 -->
+                      <img src="/assets/ads40.png" alt="Publicidade" class="ad-image" style="width: 30px; height: 30px; margin-left: 10px;"/>
+                    <% } %>
                   </button>
-                <% } %>
-                
-                <!-- Verifica se existe URL alternativa -->
-                <% if (channel.url_alternative) { %>
-                  <button class="channel-btn" 
-                          data-channel="<%= channel.url_alternative %>">
-                    <i class="fas fa-satellite-dish"></i> <%= channel.name %> Alternativo
-                  </button>
-                <% } %>
+                <% }); %>
               <% }); %>
             </div>
           <% } else { %>
             <p>Nenhum canal disponível para transmissão.</p>
           <% } %>
         </div>
-        
-        <!-- Debug: Mostrar todas as URLs disponíveis -->
-        <div style="display: none;">
-          <h4>Debug - URLs disponíveis:</h4>
-          <pre><%= JSON.stringify(urls, null, 2) %></pre>
-        </div>
-        
         
         
 
@@ -443,59 +450,44 @@
 
   <script src="/js/live.js"></script>
   <script>
-// Interceptando qualquer clique no documento
-document.addEventListener('click', (event) => {
-  const target = event.target;
+    const iframe = document.getElementById('stream-iframe');
+    const buttons = document.querySelectorAll('.channel-btn');
 
-  // Verifica se o elemento clicado é um link com target="_blank"
-  if (target.tagName === 'A' && target.getAttribute('target') === '_blank') {
-    const link = target.href;  // Captura o link clicado
-
-    // Envia a informação do link para o servidor
-    fetch('/log-click', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ link: link })  // Envia o link clicado
-    })
-    .then(response => {
-      if (!response.ok) {
-        console.error('Erro ao registrar o clique');
-      }
-    })
-    .catch(error => {
-      console.error('Erro ao enviar dados de clique para o servidor:', error);
-    });
-  }
-});
-
-// Seleciona todos os botões e o iframe
-const iframe = document.getElementById('stream-iframe');
-  const buttons = document.querySelectorAll('.channel-btn');
-
-  // Função para alterar o iframe com a URL do canal selecionado
-  function changeChannel(url) {
-    iframe.src = url;
-  }
-
-  // Função para alterar o estado ativo dos botões
-  function setActiveButton(index) {
-    buttons.forEach((button, i) => {
-      if (i === index) {
-        button.classList.add('active');
+    function aplicarSandboxPorIndex(index) {
+      if (index <= 3) {
+        iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin');
       } else {
-        button.classList.remove('active');
+        iframe.removeAttribute('sandbox');
       }
-    });
-  }
+    }
 
-  // Event listeners para os botões
-  buttons.forEach((button, index) => {
-    button.addEventListener('click', () => {
-      const url = button.getAttribute('data-channel');
-      changeChannel(url);
-      setActiveButton(index);  // Atualiza a classe 'active' no botão
+    buttons.forEach(button => {
+      button.addEventListener('click', () => {
+        const newUrl = button.getAttribute('data-channel');
+        const index = parseInt(button.getAttribute('data-index-original'), 10);
+
+        if (iframe && newUrl) {
+          iframe.src = newUrl;
+          aplicarSandboxPorIndex(index);
+        }
+
+        // Remove 'active' de todos os botões
+        buttons.forEach(btn => btn.classList.remove('active'));
+
+        // Adiciona 'active' ao botão clicado
+        button.classList.add('active');
+      });
     });
-  });
+
+    // ✅ Aplicar o sandbox corretamente no carregamento inicial
+    const botaoAtivo = document.querySelector('.channel-btn.active');
+    if (botaoAtivo) {
+      const indexInicial = parseInt(botaoAtivo.getAttribute('data-index-original'), 10);
+      aplicarSandboxPorIndex(indexInicial);
+    }
+
+
+
     function updateSimpleTimer() {
       const endTime = new Date('<%= tempoFim %>');
       const now = new Date();

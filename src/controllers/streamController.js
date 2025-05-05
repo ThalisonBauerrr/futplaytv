@@ -41,12 +41,13 @@ exports.resPlayer = async (req, res) => {
     const resultado = await jogoModel.verificarCanais(jogo.transmissoes);
     const jogosAoVivo = await jogoModel.buscarJogosAoVivo();
 
+    console.log(resultado)
     // 7. Renderizar página
     res.render('home/player', {
       pageTitle: `Futplat.tv - ${jogo.timeCasa} vs ${jogo.timeVisitante}`,
       jogo: jogo,
       jogos: jogosAoVivo,
-      urls: resultado,
+      canais: resultado, // <- aqui muda de "urls" para "canais"
       tempoRestante: tempoRestante.texto,
       tempoExpirado: tempoRestante.expirado,
       tempoFim: usuario.tempo_fim,

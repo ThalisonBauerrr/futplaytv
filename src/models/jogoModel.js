@@ -182,39 +182,43 @@ const verificarCanais = async (transmissoes) => {
     if (!transmissoes?.length) return [];
 
     connection = await db.getConnection();
-    
-    // Criar duas versões de cada transmissão: com e sem (Alternativo)
-    const transmissoesFormatadas = transmissoes.flatMap(transmissao => {
-      const base = transmissao.trim().toLowerCase();
-      const semAlternativo = base.replace(/\(alternativo\)/i, '').trim();
-      return [base, semAlternativo];
+
+    const termosBusca = transmissoes.flatMap((transmissao) => {
+      const nomeBase = transmissao.trim().toLowerCase();
+      const semAlternativo = nomeBase.replace(/\(alternativo\)/i, '').trim();
+      return [nomeBase, semAlternativo];
     });
 
-    // Remover duplicados
-    const transmissoesUnicas = [...new Set(transmissoesFormatadas)];
-
-    const placeholders = transmissoesUnicas.map(() => '?').join(',');
+    const termosUnicos = [...new Set(termosBusca)].filter(Boolean);
 
     const [canais] = await connection.query(`
       SELECT 
-        c.id,
-        c.name,
-        c.url,
-        c.url_alternative,
-        c.logo
-      FROM canais c
-      WHERE LOWER(TRIM(c.name)) IN (${placeholders})
-      ORDER BY c.name ASC
-    `, transmissoesUnicas);
-    return canais;
+        id,
+        name,
+        url_0, url_1, url_2, url_3, 
+        url_4, url_5, url_6,
+        logo
+      FROM canais
+      WHERE LOWER(TRIM(name)) IN (${termosUnicos.map(() => '?').join(',')})
+      ORDER BY name ASC
+    `, termosUnicos);
+
+    return canais.map((canal) => {
+      const urls = [];
+      for (let i = 0; i <= 6; i++) {
+        const url = canal[`url_${i}`];
+        if (url?.trim()) urls.push({ url, index: i }); // ← inclui o índice original
+      }
+      return { ...canal, urls };
+    })
+
   } catch (error) {
     console.error('Erro ao buscar canais ao vivo:', error);
     throw error;
   } finally {
-    if (connection) connection.release();
+    connection?.release();
   }
 };
-
 module.exports = {
   buscarJogoPorId,
   buscarJogosDeHoje,
