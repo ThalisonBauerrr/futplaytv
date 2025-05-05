@@ -74,37 +74,6 @@ app.set('view engine', 'ejs');
 
 // Importando as rotas
 // Proxy reverso para nossoplayeronlinehd.com
-app.use('/proxy-player', createProxyMiddleware({
-  target: 'https://nossoplayeronlinehd.com',
-  changeOrigin: true,
-  selfHandleResponse: true,
-  pathRewrite: {
-    '^/proxy-player': '', // Remove "/proxy-player" da URL antes de encaminhar
-  },
-  onProxyRes: async (proxyRes, req, res) => {
-    const contentType = proxyRes.headers['content-type'] || '';
-
-    if (contentType.includes('text/html')) {
-      let body = Buffer.from([]);
-      proxyRes.on('data', (chunk) => {
-        body = Buffer.concat([body, chunk]);
-      });
-
-      proxyRes.on('end', () => {
-        let html = body.toString('utf8');
-
-        // Remove o script sandbox-detection.js
-        html = html.replace(/<script[^>]*src=["']\/assets\/sandbox-detection\.js["'][^>]*><\/script>/gi, '');
-
-        res.setHeader('content-type', 'text/html');
-        res.statusCode = proxyRes.statusCode;
-        res.end(html);
-      });
-    } else {
-      proxyRes.pipe(res);
-    }
-  }
-}));
 app.use('/', require('./src/routes/streamRoutes'));
 app.use('/admin', require('./src/routes/adminRoutes'));
 

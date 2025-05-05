@@ -279,13 +279,32 @@
         </div>
 
         <div class="video-player stream-container">
-          <!-- O iframe começa com a primeira URL do primeiro canal -->
           <%
           const streamUrl = (urls && urls[0] && urls[0].url) ? urls[0].url : '';
           %>
           
           <% if (streamUrl) { %>
-            <iframe src="/proxy-player/tv/disneyplus1" width="100%" height="600" frameborder="0"></iframe>
+            <%
+              let hostname;
+              try {
+                const url = new URL(streamUrl);
+                hostname = url.hostname;
+              } catch (e) {
+                hostname = '';
+              }
+              const includeSandbox = hostname !== 'nossoplayeronlinehd.com';
+            %>
+            <iframe 
+              id="stream-iframe"
+              src="<%= streamUrl %>"
+              
+              <% if (includeSandbox) { %> 
+                sandbox="allow-scripts allow-same-origin"
+              <% } %>
+              referrerpolicy="strict-origin-when-cross-origin"
+              allow="autoplay"
+              frameborder="0">
+            </iframe>
           <% } else { %>
             <div class="error-message">
               <p>Não foi possível carregar o stream no momento.</p>
@@ -437,30 +456,6 @@
 
   <script src="/js/live.js"></script>
   <script>
-// Interceptando qualquer clique no documento
-document.addEventListener('click', (event) => {
-  const target = event.target;
-
-  // Verifica se o elemento clicado é um link com target="_blank"
-  if (target.tagName === 'A' && target.getAttribute('target') === '_blank') {
-    const link = target.href;  // Captura o link clicado
-
-    // Envia a informação do link para o servidor
-    fetch('/log-click', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ link: link })  // Envia o link clicado
-    })
-    .then(response => {
-      if (!response.ok) {
-        console.error('Erro ao registrar o clique');
-      }
-    })
-    .catch(error => {
-      console.error('Erro ao enviar dados de clique para o servidor:', error);
-    });
-  }
-});
 
 // Seleciona todos os botões e o iframe
 const iframe = document.getElementById('stream-iframe');
