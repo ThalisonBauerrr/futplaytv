@@ -197,7 +197,7 @@ async function getjogos() {
     console.log(`Buscando partidas para hoje: ${dateStr}`);
 
     const browser = await puppeteer.launch({
-        headless: false,
+        headless: true,
         executablePath: '/usr/bin/chromium-browser', 
         args: [
             '--no-sandbox',
