@@ -193,7 +193,7 @@ const verificarCanais = async (transmissoes) => {
 
     const [canais] = await connection.query(`
       SELECT 
-        id,
+        id, 
         name,
         url_0, url_1, url_2, url_3, 
         url_4, url_5, url_6,
