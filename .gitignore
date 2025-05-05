@@ -1,4 +1,2 @@
 node_modules/
 package-lock.json
-src/services/updateTransmissoes.js
-src/services/updateCanais.js
