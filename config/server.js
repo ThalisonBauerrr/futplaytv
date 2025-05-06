@@ -34,8 +34,8 @@ module.exports = (app) => {
           "'self'",
           "data:",
           "https://playertv.net/",
-          "https://reidoscanais.cc",
-          "https://logodetimes.com",
+          "https://reidoscanais.cc/",
+          "https://logodetimes.com/",
           "https://embedcanaistv.com/",
           "https://embed.tvcdn.space/",
           "https://frontendapiapp.blob.core.windows.net/",
@@ -47,7 +47,8 @@ module.exports = (app) => {
           "https://nossoplayeronlinehd.com/",
           "https://www.google.com/",
           "https://netcinez.ch/",
-          "https://tvl.nectinez.ch/"
+          "https://tvl.nectinez.ch/",
+          "https://embed.tvcdn.space/"
           
         ],
         frameSrc: [
@@ -55,7 +56,7 @@ module.exports = (app) => {
           "data:",
           "https://playertv.net/",
           "https://www.google.com/",
-          "https://reidoscanais.cc",
+          "https://reidoscanais.cc/",
           "https://embedcanaistv.com/",
           "https://embed.tvcdn.space/",
           "https://embedtv-0.icu/",
@@ -64,7 +65,8 @@ module.exports = (app) => {
           "https://meuplayeronlinehd.com/",
           "https://nossoplayeronlinehd.com/",
           "https://netcinez.ch/",
-          "https://tvl.nectinez.ch/"
+          "https://tvl.nectinez.ch/",
+          "https://embed.tvcdn.space/"
 
         ]
         
