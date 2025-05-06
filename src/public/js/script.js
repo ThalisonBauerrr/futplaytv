@@ -1,70 +1,48 @@
-document.addEventListener('DOMContentLoaded', function() {
-  // Elementos do menu
-  const menuContainer = document.querySelector('.menu-container');
+document.addEventListener('DOMContentLoaded', () => {
+  // Elementos do Menu
   const menuToggle = document.querySelector('.menu-toggle');
-  const closeMenu = document.querySelector('.close-menu');
+  const menuIcon = document.getElementById('menu-icon');
+  const mainNav = document.querySelector('.main-nav');
+  const body = document.body;
+
+  const menuCloseBtn = document.getElementById('menu-close-btn');
   const menuOverlay = document.querySelector('.menu-overlay');
-  
-  // Verifica se é mobile
-  function isMobile() {
-    return window.innerWidth < 1024;
+
+  // Função para abrir/fechar menu
+  function toggleMenu() {
+    const isActive = mainNav.classList.toggle('active');
+    menuToggle.classList.toggle('active');
+    body.style.overflow = isActive ? 'hidden' : '';
+
+    // Alterna ícone do botão principal
+    menuIcon.classList.toggle('fa-bars', !isActive);
+    menuIcon.classList.toggle('fa-times', isActive);
   }
-  
-  // Verifica se todos os elementos existem
-  function initMenu() {
-    if (!menuContainer || !menuToggle || !closeMenu || !menuOverlay) {
-      console.error('Elementos do menu não encontrados');
-      return false;
-    }
-    return true;
+
+  // Função para fechar o menu
+  function closeMenu() {
+    mainNav.classList.remove('active');
+    menuToggle.classList.remove('active');
+    menuIcon.classList.remove('fa-times');
+    menuIcon.classList.add('fa-bars');
+    body.style.overflow = '';
   }
-  
-  
-  // Funções do menu
-  function openMenu() {
-    if (isMobile()) {
-      menuContainer.classList.add('menu-active');
-      document.body.style.overflow = 'hidden';
-    }
+
+  // Clique no botão do menu
+  menuToggle.addEventListener('click', toggleMenu);
+
+  // Clique no botão de fechar dentro do menu
+  if (menuCloseBtn) {
+    menuCloseBtn.addEventListener('click', closeMenu);
   }
-  
-  function closeMenuHandler() {
-    if (isMobile()) {
-      menuContainer.classList.remove('menu-active');
-      document.body.style.overflow = '';
-    }
+
+  // Clique na overlay fecha o menu
+  if (menuOverlay) {
+    menuOverlay.addEventListener('click', closeMenu);
   }
-  
-  // Inicialização
-  if (initMenu()) {
-    menuToggle.addEventListener('click', openMenu);
-    closeMenu.addEventListener('click', closeMenuHandler);
-    menuOverlay.addEventListener('click', closeMenuHandler);
-    
-    // Fechar com ESC
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && menuContainer.classList.contains('menu-active')) {
-        closeMenuHandler();
-      }
-    });
-    
-    // Fechar ao clicar em links
-    document.querySelectorAll('.nav-link').forEach(link => {
-      link.addEventListener('click', () => {
-        if (isMobile()) {
-          closeMenuHandler();
-        }
-      });
-    });
-  }
-  
-  // Inicializa o cronômetro se os elementos existirem
-  initTimer();
-  
-  // Redimensionamento
-  window.addEventListener('resize', () => {
-    if (!isMobile()) {
-      closeMenuHandler();
-    }
+
+  // Fechar menu ao clicar em qualquer link
+  document.querySelectorAll('.nav-link').forEach(link => {
+    link.addEventListener('click', closeMenu);
   });
 });

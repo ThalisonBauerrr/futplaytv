@@ -7,27 +7,29 @@ module.exports = (app) => {
   app.use(helmet({
     contentSecurityPolicy: {
       directives: {
-        defaultSrc: ["'self'"],
         styleSrc: [
           "'self'",
           "'unsafe-inline'",
           "https://cdnjs.cloudflare.com/",
           "https://fonts.googleapis.com/",
           "https://vjs.zencdn.net/",
+          "https://cdnjs.cloudflare.com/"
         ],
         fontSrc: [
           "'self'",
-          "https://cdnjs.cloudflare.com",
-          "https://fonts.gstatic.com"     // Domínio das fontes do Google
+          "data:",
+          "https://cdnjs.cloudflare.com/",
+          "https://fonts.gstatic.com/",
+          "https://fonts.googleapis.com/"
         ],
         scriptSrc: [
           "'self'",
-          "https://cdnjs.cloudflare.com",
           "https://entitlements.jwplayer.com/",
           "https://cdn.bcdn.zip/tv/scriptcanais26.js",
           "https://vjs.zencdn.net/",
           "https://cdnjs.cloudflare.com/",
           "https://entitlements.jwplayer.com/",
+          "https://cdnjs.cloudflare.com/",
           "'unsafe-inline'"
         ],
         imgSrc: [

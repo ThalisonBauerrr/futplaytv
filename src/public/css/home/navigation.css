@@ -1,15 +1,171 @@
+/* ===== VARIÁVEIS DO MENU ===== */
+:root {
+  --bg-darker: #0a0a0d;
+  --accent-primary: #00ff88;
+  --accent-secondary: #0099ff;
+  --text-primary: #f0f0f5;
+  --text-secondary: #b0b0bd;
+  --gradient-primary: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  --transition-fast: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-medium: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ===== ESTRUTURA PRINCIPAL DO MENU ===== */
+.menu-close-btn {
+  position: absolute;
+  top: 10px;
+  left: -5px;
+  z-index: 100;
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: white;
+  cursor: pointer;
+  display: none; /* Escondido por padrão */
+}
+
+.main-nav.active .menu-close-btn {
+  display: block;
+}
+nav {
+  grid-area: navigation;
+  background: var(--bg-darker);
+  padding: 2rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Logo do Menu */
+.nav-logo {
+  font-size: 1.5rem;
+  font-weight: 700;
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  margin-bottom: 3rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  text-align: center;
+  letter-spacing: 1px;
+}
+
+/* Lista de Itens do Menu */
+/* ===== MENU ===== */
+.main-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 280px;
+  height: 100vh;
+  background: var(--bg-darker);
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+  z-index: 1000;
+}
+.main-nav.active {
+  transform: translateX(0);
+}
+.nav-menu {
+  list-style: none;
+  flex-grow: 1;
+}
+
+.nav-item {
+  margin-bottom: 0.75rem;
+  animation: fadeIn 0.5s ease forwards;
+  opacity: 0;
+}
+
+/* Animações de entrada sequencial */
+.nav-item:nth-child(1) { animation-delay: 0.1s; }
+.nav-item:nth-child(2) { animation-delay: 0.2s; }
+.nav-item:nth-child(3) { animation-delay: 0.3s; }
+.nav-item:nth-child(4) { animation-delay: 0.4s; }
+.nav-item:nth-child(5) { animation-delay: 0.5s; }
+
+/* Links do Menu */
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.85rem 1.5rem;
+  color: var(--text-secondary);
+  text-decoration: none;
+  border-radius: 8px;
+  transition: var(--transition-medium);
+  position: relative;
+  overflow: hidden;
+}
+
+.nav-link::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(0, 255, 136, 0.1), transparent);
+  transition: var(--transition-medium);
+}
+
+.nav-link:hover {
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text-primary);
+}
+
+.nav-link:hover::before {
+  left: 100%;
+}
+
+.nav-link.active {
+  background: rgba(0, 255, 136, 0.1);
+  color: var(--accent-primary);
+  font-weight: 500;
+}
+
+.nav-link.active .nav-icon {
+  color: var(--accent-primary);
+}
+
+/* Ícones do Menu */
+.nav-icon {
+  font-size: 1.3rem;
+  width: 24px;
+  text-align: center;
+  color: var(--text-secondary);
+  transition: var(--transition-fast);
+}
+
+.nav-text {
+  flex-grow: 1;
+}
+
+/* Container da Caixa de Acesso */
+.simple-access-container {
+  margin-top: auto; /* Empurra para o final do menu */
+  padding: 0 15px 20px;
+  width: 100%;
+}
+
+/* Caixa de Acesso Simples */
 .simple-access-box {
-  background: #1a2636;
+  background: rgba(255, 255, 255, 0.05);
   border-radius: 8px;
   padding: 15px;
-  margin-bottom: 20px;
   text-align: center;
-  font-family: Arial, sans-serif;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  max-width: 100%; /* Garante que não ultrapasse o menu */
+  box-sizing: border-box;
 }
 
 .access-message {
-  color: #8e9eae;
-  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 12px;
   margin-bottom: 8px;
 }
 
@@ -17,44 +173,107 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-bottom: 15px;
+  margin-bottom: 10px;
   gap: 5px;
 }
 
 .simple-time {
-  font-size: 28px;
+  font-size: 22px;
   font-weight: bold;
   color: #4fc3f7;
-  min-width: 25px;
+  min-width: 22px;
 }
 
 .simple-time-separator {
-  font-size: 28px;
+  font-size: 22px;
   color: #4fc3f7;
 }
 
 .simple-qr-section {
-  border-top: 1px solid #2a3a4a;
-  padding-top: 15px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 12px;
+  margin-top: 12px;
 }
 
 .simple-qr-title {
-  color: #8e9eae;
-  font-size: 14px;
-  margin-bottom: 10px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 12px;
+  margin-bottom: 8px;
 }
 
 .simple-qr-code {
-  width: 140px;
-  height: 140px;
-  margin: 0 auto 10px;
+  width: 170px;
+  height: 170px;
+  margin: 0 auto 8px;
   display: block;
+  border-radius: 4px;
 }
 
 .simple-qr-text {
-  color: #8e9eae;
-  font-size: 13px;
-  margin-top: 5px;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 11px;
+  line-height: 1.4;
 }
 
+/* Responsividade */
+@media (max-width: 992px) {
+  .simple-access-container {
+    padding-bottom: 15px;
+  }
+  
+  .simple-access-box {
+    padding: 12px;
+  }
+  
+  .simple-qr-code {
+    width: 170px;
+    height: 170px;
+  }
+}
+/* Responsividade do Menu */
+@media (max-width: 992px) {
+  nav {
+    position: fixed;
+    width: 280px;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    z-index: 1000;
+  }
 
+  nav.menu-active {
+    transform: translateX(0);
+  }
+
+  .menu-toggle {
+    display: flex;
+    align-items: center;       /* Alinha ícone dentro */
+    justify-content: center;   /* Centraliza horizontalmente dentro do botão */
+    position: fixed;
+    top: 0;
+    left: 15px;
+    height: 80px;              /* mesmo que o header */
+    width: 50px;               /* opcional */
+    font-size: 1.5rem;
+    transition: transform 0.3s ease;
+    z-index: 1100;
+    cursor: pointer;
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-right: 10px;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    letter-spacing: 1px;
+  }
+}
+/* Estado quando o menu está aberto */
+.menu-toggle.active {
+  transform: rotate(90deg);
+}
+
+/* Animações */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

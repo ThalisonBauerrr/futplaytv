@@ -9,7 +9,6 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 const { v4: uuidv4 } = require('uuid');
 const flash = require('connect-flash');
-const { createProxyMiddleware } = require('http-proxy-middleware');
 
 const cron = require('node-cron');  // Adiciona a dependência do node-cron
 const app = express();

@@ -1,63 +1,62 @@
-<nav>
-  <div class="nav-logo">
-    <i class="fas fa-tv"></i> FUTPLAY.TV
-  </div>
-  
-  <ul class="nav-menu">
-    <li class="nav-item">
-      <a href="/" class="nav-link active">
-        <i class="fas fa-home nav-icon"></i>
-        <span class="nav-text">Início</span>
-      </a>
-    </li>
-    <li class="nav-item">
-      <a href="#" class="nav-link">
-        <i class="fas fa-calendar-alt nav-icon"></i>
-        <span class="nav-text">Calendário</span>
-      </a>
-    </li>
-    <li class="nav-item">
-      <a href="#" class="nav-link">
-        <i class="fas fa-star nav-icon"></i>
-        <span class="nav-text">Favoritos</span>
-      </a>
-    </li>
-    <li class="nav-item">
-      <a href="#" class="nav-link">
-        <i class="fas fa-trophy nav-icon"></i>
-        <span class="nav-text">Campeonatos</span>
-      </a>
-    </li>
-    <li class="nav-item">
-      <a href="#" class="nav-link">
-        <i class="fas fa-cog nav-icon"></i>
-        <span class="nav-text">Configurações</span>
-      </a>
-    </li>
-  </ul>
-  
-<div class="simple-access-box">
-  <!-- Texto explicativo acima do cronômetro -->
-  <div class="access-message">
-    Seu tempo de acesso gratuito está acabando:
+<nav class="main-nav">
+  <!-- Container do Menu -->
+  <div class="menu-container">
+    <!-- Botão para abrir o menu -->
+
+    <!-- Sobreposição para fechar o menu -->
+    <div class="menu-overlay"></div>
+      <!-- Botão de Fechar -->
+    <button class="menu-close-btn" id="menu-close-btn">
+      <i class="fas fa-chevron-left logo"></i>
+    </button>
+    <!-- Itens do Menu -->
+    <ul class="nav-menu">
+      <li class="nav-item">
+        <a href="/" class="nav-link active">
+          <i class="fas fa-home nav-icon"></i>
+          <span class="nav-text">Início</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="#" class="nav-link">
+          <i class="fas fa-trophy nav-icon"></i>
+          <span class="nav-text">Campeonatos</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="#" class="nav-link">
+          <i class="fas fa-trophy nav-icon"></i>
+          <span class="nav-text">Canais</span>
+        </a>
+      </li>
+    </ul>
   </div>
 
-  <!-- Cronômetro Simples -->
-  <div class="simple-timer">
-    <div class="simple-time" id="simple-minutes">00</div>
-    <div class="simple-time-separator">:</div>
-    <div class="simple-time" id="simple-seconds">00</div>
-  </div>
+  <!-- Caixa de Acesso Simples (Cronômetro e QR Code) -->
+  <div class="simple-access-container">
+    <div class="simple-access-box">
+      <!-- Texto explicativo acima do cronômetro -->
+      <div class="access-message">
+        Seu tempo de acesso gratuito está acabando:
+      </div>
 
-  <!-- Seção QR Code -->
-  <div class="simple-qr-section">
-    <div class="simple-qr-title">APOIE O PROJETO</div>
-    <% if (qrCodeBase64) { %>
-      <img src="data:image/png;base64,<%= qrCodeBase64 %>" alt="QR Code Doação" class="simple-qr-code">
-    <% } %>
-    <div class="simple-qr-text">
-      Faça uma doação para continuar assistindo
+      <!-- Cronômetro Simples -->
+      <div class="simple-timer">
+        <div class="simple-time" id="simple-minutes">00</div>
+        <div class="simple-time-separator">:</div>
+        <div class="simple-time" id="simple-seconds">00</div>
+      </div>
+
+      <!-- Seção QR Code -->
+      <div class="simple-qr-section">
+        <div class="simple-qr-title">APOIE O PROJETO</div>
+        <% if (qrCodeBase64) { %>
+          <img src="data:image/png;base64,<%= qrCodeBase64 %>" alt="QR Code Doação" class="simple-qr-code">
+        <% } %>
+        <div class="simple-qr-text">
+          Faça uma doação para continuar assistindo
+        </div>
+      </div>
     </div>
   </div>
-</div>
 </nav>

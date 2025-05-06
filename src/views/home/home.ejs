@@ -51,7 +51,6 @@
   
   <main>
     <h1 class="page-title">Jogos ao Vivo</h1>
-    
     <div class="games-grid">
 
 
@@ -137,11 +136,10 @@
     
     </div>
   </main>
-  
   <%- include('../partials/footer') %>
+  <script src="js/script.js"></script>
   <script>
-    console.log('<%= tempoFim %>')
-    function updateSimpleTimer() {
+        function updateSimpleTimer() {
       const endTime = new Date('<%= tempoFim %>');
       const now = new Date();
       let remaining = Math.max(0, endTime - now);
@@ -158,8 +156,6 @@
     }
     
     updateSimpleTimer();
-    </script>
-  <script src="/js/script.js"></script>
-
+  </script>
 </body>
 </html>
