@@ -222,12 +222,12 @@ async function getjogos() {
         console.log('Página carregada, buscando dados...');
 
         // Esperar o carregamento dos dados
-        await page.waitForSelector('#routes-wrapper > div:nth-child(4) > div > div', {
-            timeout: 10000
+        await page.waitForSelector('#routes-wrapper > div:nth-child(5) > div > div', {
+            timeout: 30000
         });
         // Verificar quantas competições existem
         const competicoesCount = await page.$$eval(
-            '#routes-wrapper > div:nth-child(4) > div > div > div',
+            '#routes-wrapper > div:nth-child(5) > div > div > div',
             divs => divs.length
         );
 
@@ -237,7 +237,7 @@ async function getjogos() {
 
         // Iterar sobre cada competição
         for (let i = 1; i <= competicoesCount; i++) {
-            const competicaoSelector = `#routes-wrapper > div:nth-child(4) > div > div > div:nth-child(${i})`;
+            const competicaoSelector = `#routes-wrapper > div:nth-child(5) > div > div > div:nth-child(${i})`;
             
             // Pegar nome da competição
             const nomeCompeticao = await page.$eval(
