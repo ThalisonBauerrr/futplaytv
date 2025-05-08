@@ -1,14 +1,36 @@
-<header>
+<!-- partials/header.ejs -->
+<header class="site-header">
   <div class="header-left">
-    <div class="menu-toggle">
-      <i class="fas fa-bars" id="menu-icon"></i>
+    <div class="menu-toggle" id="menuToggle">
+      <i class="fas fa-bars"></i>
     </div>
-    <div class="logo">
+    <div class="nav-logo">
       FUTplay.TV
     </div>
   </div>
   
   <div class="user-area">
-    <!-- Seus elementos de usuário aqui -->
+    <span class="register-text">Cadastre-se</span>
+    <a href="#" class="nav-link login-btn" id="loginTrigger">
+      <i class="fas fa-sign-in-alt nav-icon"></i>
+      <span class="nav-text">Login</span>
+    </a>
   </div>
 </header>
+
+<!-- Modal deve ficar FORA do header -->
+<div class="login-modal" id="loginModal">
+  <div class="modal-content">
+    <span class="close-modal">&times;</span>
+    <h2 class="page-title">Login</h2>
+    <form class="login-form">
+      <input type="text" placeholder="Usuário ou E-mail" required>
+      <input type="password" placeholder="Senha" required>
+      <button type="submit" class="login-submit">Entrar</button>
+      <div class="login-options">
+        <a href="#">Esqueci minha senha</a>
+        <a href="#">Criar conta</a>
+      </div>
+    </form>
+  </div>
+</div>

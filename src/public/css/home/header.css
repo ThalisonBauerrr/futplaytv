@@ -1,0 +1,216 @@
+   /* ===== VARIÁVEIS ===== */
+   :root {
+    --bg-darker: #0a0a0d;
+    --accent-primary: #00ff88;
+    --accent-secondary: #0099ff;
+    --text-primary: #f0f0f5;
+    --text-secondary: #b0b0bd;
+    --gradient-primary: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    --transition-fast: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-medium: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  /* ===== HEADER ===== */
+  .site-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 2rem;
+    background: var(--bg-darker);
+    height: 80px;
+    width: 100%;
+    z-index: 1000;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    box-sizing: border-box;
+  }
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .menu-toggle {
+    position: relative;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    cursor: pointer;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .nav-logo {
+    font-size: 1.5rem;
+    font-weight: 700;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    letter-spacing: 1px;
+  }
+
+  .user-area {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+  }
+
+  .register-text {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: var(--transition-fast);
+  }
+
+  .register-text:hover {
+    color: var(--accent-primary);
+    text-decoration: underline;
+  }
+
+  .login-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    padding: 0.75rem 1.25rem;
+    margin-right: 0;
+    transition: var(--transition-medium);
+  }
+
+  .login-btn:hover {
+    background: rgba(0, 255, 136, 0.1);
+    color: var(--accent-primary);
+  }
+
+  .login-btn:hover .nav-icon {
+    color: var(--accent-primary);
+  }
+
+  /* ===== MODAL - CORREÇÕES CRUCIAIS ===== */
+  .login-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 9999; /* Z-index maior que o header */
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .modal-content {
+    background: var(--bg-darker);
+    padding: 2rem;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 400px;
+    position: relative;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    animation: modalFadeIn 0.3s ease-out;
+  }
+
+  .close-modal {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 1.5rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: var(--transition-fast);
+  }
+
+  .close-modal:hover {
+    color: var(--accent-primary);
+  }
+
+  .login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .login-form input {
+    padding: 0.8rem;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+  }
+
+  .login-submit {
+    background: var(--gradient-primary);
+    color: white;
+    padding: 0.8rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    margin-top: 0.5rem;
+  }
+
+  .login-options {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 1rem;
+    font-size: 0.8rem;
+  }
+
+  .login-options a {
+    color: var(--text-secondary);
+    transition: var(--transition-fast);
+  }
+
+  .login-options a:hover {
+    color: var(--accent-primary);
+  }
+
+  /* ===== RESPONSIVIDADE ===== */
+  @media (max-width: 768px) {
+    .menu-toggle {
+      display: flex;
+    }
+    .site-header {
+      padding: 0 1rem;
+    }
+    
+    
+    .login-btn {
+      padding: 0.75rem;
+    }
+
+    .register-text {
+      font-size: 0.8rem;
+    }
+  }
+
+  @media (min-width: 992px) {
+    .site-header {
+      left: 280px;
+    }
+
+    .login-btn {
+      margin-right: 2rem;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .menu-toggle {
+      display: flex;
+    }
+    
+    .nav-logo {
+      font-size: 1.3rem;
+    }
+    
+    .login-btn {
+      padding: 0.65rem;
+    }
+
+    .register-text {
+      display: none; /* Esconde em telas muito pequenas */
+    }
+    
+  }

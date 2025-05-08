@@ -1,3 +1,44 @@
+
+const userIsLoggedIn = false; // Altere para true quando usuário logar
+
+document.addEventListener('DOMContentLoaded', function() {
+  const loginTrigger = document.getElementById('loginTrigger');
+  const loginModal = document.getElementById('loginModal');
+  const closeModal = document.querySelector('.close-modal');
+
+  // Abre modal
+  if (loginTrigger) {
+    loginTrigger.addEventListener('click', function(e) {
+      e.preventDefault();
+      loginModal.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+    });
+  }
+
+  // Fecha modal
+  function closeLoginModal() {
+    loginModal.style.display = 'none';
+    document.body.style.overflow = '';
+  }
+
+  if (closeModal) {
+    closeModal.addEventListener('click', closeLoginModal);
+  }
+
+  // Fecha ao clicar em qualquer área fora do modal
+  loginModal.addEventListener('click', function(e) {
+    if (e.target === loginModal) {
+      closeLoginModal();
+    }
+  });
+
+  // Fecha com ESC
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && loginModal.style.display === 'flex') {
+      closeLoginModal();
+    }
+  });
+});
 document.addEventListener('DOMContentLoaded', () => {
   // Elementos do Menu
   const menuToggle = document.querySelector('.menu-toggle');

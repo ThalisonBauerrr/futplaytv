@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Futplay.TV - HOME</title>
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/home/navigation.css">
+  <link rel="stylesheet" href="/css/home/header.css">
+  <link rel="icon" href="/assets/favicon.ico" type="image/x-icon">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <%- include('../partials/header') %>
+  <%- include('../partials/navigation', {qrCodeBase64: qrCodeBase64}) %>
+  
+  <main>
+    <h1 class="page-title">Conteudo Adulto</h1>
+
+  </main>
+  <%- include('../partials/footer') %>
+  <script src="/js/script.js"></script>
+  <script>
+        function updateSimpleTimer() {
+      const endTime = new Date('<%= tempoFim %>');
+      const now = new Date();
+      let remaining = Math.max(0, endTime - now);
+    
+      const mins = Math.floor(remaining / 60000);
+      const secs = Math.floor((remaining % 60000) / 1000);
+    
+      document.getElementById('simple-minutes').textContent = mins.toString().padStart(2, '0');
+      document.getElementById('simple-seconds').textContent = secs.toString().padStart(2, '0');
+    
+      if (remaining > 0) {
+        setTimeout(updateSimpleTimer, 1000);
+      }
+    }
+    
+    updateSimpleTimer();
+  </script>
+</body>
+</html>

@@ -13,7 +13,8 @@ module.exports = (app) => {
           "https://cdnjs.cloudflare.com/",
           "https://fonts.googleapis.com/",
           "https://vjs.zencdn.net/",
-          "https://cdnjs.cloudflare.com/"
+          "https://cdnjs.cloudflare.com/",
+          "http://www.w3.org/",
         ],
         fontSrc: [
           "'self'",
@@ -30,6 +31,7 @@ module.exports = (app) => {
           "https://cdnjs.cloudflare.com/",
           "https://entitlements.jwplayer.com/",
           "https://cdnjs.cloudflare.com/",
+          "http://www.w3.org/",
           "'unsafe-inline'"
         ],
         imgSrc: [
@@ -50,7 +52,8 @@ module.exports = (app) => {
           "https://www.google.com/",
           "https://netcinez.ch/",
           "https://tvl.nectinez.ch/",
-          "https://embed.tvcdn.space/"
+          "https://embed.tvcdn.space/",
+          "http://www.w3.org/"
           
         ],
         frameSrc: [
