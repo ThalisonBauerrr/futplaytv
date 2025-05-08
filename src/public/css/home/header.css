@@ -31,7 +31,6 @@
 
   .menu-toggle {
     position: relative;
-    display: none;
     align-items: center;
     justify-content: center;
     font-size: 1.8rem;
@@ -168,6 +167,24 @@
   }
 
   /* ===== RESPONSIVIDADE ===== */
+  @media (max-width: 480px) {
+    .menu-toggle {
+      display: flex;
+    }
+
+    .nav-logo {
+      font-size: 1.3rem;
+    }
+    
+    .login-btn {
+      padding: 0.65rem;
+    }
+
+    .register-text {
+      display: none; /* Esconde em telas muito pequenas */
+    }
+    
+  }
   @media (max-width: 768px) {
     .menu-toggle {
       display: flex;
@@ -187,6 +204,9 @@
   }
 
   @media (min-width: 992px) {
+    .menu-toggle {
+      display: none;
+    }
     .site-header {
       left: 280px;
     }
@@ -196,21 +216,4 @@
     }
   }
 
-  @media (max-width: 480px) {
-    .menu-toggle {
-      display: flex;
-    }
-    
-    .nav-logo {
-      font-size: 1.3rem;
-    }
-    
-    .login-btn {
-      padding: 0.65rem;
-    }
-
-    .register-text {
-      display: none; /* Esconde em telas muito pequenas */
-    }
-    
-  }
+ 
