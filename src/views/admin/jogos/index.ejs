@@ -28,6 +28,7 @@
         }
         
         .transmissoes-list {
+            max-width: 250px;
             list-style: none;
             padding: 0;
             margin: 0;
@@ -121,6 +122,32 @@
             color: var(--light-2);
             font-size: 0.95em;
         }
+        /* Adicione ao seu bloco de estilos existente */
+        .btn-transmissao {
+            background-color: var(--purple);
+            color: white;
+            border: none;
+            margin: 0 3px;
+            padding: 5px 8px;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .btn-transmissao:hover {
+            background-color: var(--purple-dark);
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .btn-transmissao i {
+            font-size: 0.9em;
+        }
+
+        /* Se não tiver as variáveis de cor definidas, adicione no :root */
+        :root {
+            --purple: #6a3093;
+            --purple-dark: #4a1d6b;
+        }
     </style>
 </head>
 <body>
@@ -130,7 +157,7 @@
         <main class="main-content">
             <header class="content-header">
                 <h1><i class="fas fa-gamepad"></i> Gerenciar Jogos</h1>
-                <p class="breadcrumb">Partidas cadastradas</p>
+                <a  class="breadcrumb" href="/admin/jogos">Partidas cadastradas</a>
             </header>
 
             <% if (success) { %>
@@ -175,7 +202,6 @@
                                     <th>Time Visitante</th>
                                     <th id="sortDate" class="sortable">Data/Hora</th>
                                     <th>Transmissões</th>
-                                    <th>Link</th>
                                     <th>Ações</th>
                                 </tr>
                             </thead>
@@ -230,27 +256,22 @@
                                                 <span class="text-muted">--</span>
                                             <% } %>
                                         </td>
-                                        
-                                        <td>
-                                            <% if (jogo.link_partida) { %>
-                                                <span class="link-partida" title="<%= jogo.link_partida %>">
-                                                    <%= jogo.link_partida.replace(/^https?:\/\//, '') %>
-                                                </span>
-                                                <button class="btn-copiar" data-clipboard-text="<%= jogo.link_partida %>">
-                                                    <i class="fas fa-copy"></i>
-                                                </button>
-                                            <% } else { %>
-                                                <span class="text-muted">--</span>
-                                            <% } %>
-                                        </td>
-                                                                               
+                                                 
                                         <td>
                                             <div class="actions">
-                                                <a href="/admin/jogos/editar/<%= jogo.id %>" class="btn btn-sm btn-edit">
+                                                <!-- Botão de Edição -->
+                                                <a href="/admin/jogos/editar/<%= jogo.id %>" class="btn btn-sm btn-edit" title="Editar Partida">
                                                     <i class="fas fa-edit"></i>
                                                 </a>
+                                                
+                                                <!-- Botão de Adicionar Transmissão -->
+                                                <a href="/admin/jogos/adicionar-transmissao/<%= jogo.id %>" class="btn btn-sm btn-transmissao" title="Adicionar Transmissão">
+                                                    <i class="fas fa-satellite-dish"></i>
+                                                </a>
+                                                
+                                                <!-- Botão de Exclusão -->
                                                 <form action="/admin/jogos/excluir/<%= jogo.id %>" method="POST" class="d-inline">
-                                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Tem certeza que deseja excluir esta partida?')">
+                                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Tem certeza que deseja excluir esta partida?')" title="Excluir Partida">
                                                         <i class="fas fa-trash-alt"></i>
                                                     </button>
                                                 </form>

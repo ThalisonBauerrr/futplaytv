@@ -29,5 +29,7 @@ router.get('/jogos/editar/:id', partidasController.formEditarPartida);
 router.post('/jogos/editar/:id', partidasController.editarPartida);
 router.get('/jogos/excluir/:id', partidasController.excluirPartida);
 router.get('/jogos/update-competicao/:id', partidasController.atualizarCompeticao);
+router.get('/jogos/adicionar-transmissao/:id', partidasController.showAddTransmissionForm);
+router.post('/jogos/adicionar-transmissao/:id', partidasController.addTransmission);
 
 module.exports = router;

@@ -4,7 +4,7 @@ const usuarioModel = require('../models/usuarioModel');
 const { criarPagamentoQR } = require('../services/mercadoPagoService');
 const jogoModel = require('../models/jogoModel');
 
-exports.resHome = async (req, res) => {
+exports.resAdulto = async (req, res) => {
   try {
     // 1. Buscar jogos do dia
     const jogosHoje = await jogoModel.buscarJogosDeHoje();
@@ -32,8 +32,8 @@ exports.resHome = async (req, res) => {
     const qrCodeBase64 = await gerenciarQRCode(uuidUsuario, usuario, inserted);
 
     // 6. Renderizar página com os dados
-    res.render('home/home', {
-      pageTitle: 'Futplat.tv - HOME',
+    res.render('home/conteudoAdulto', {
+      pageTitle: 'Futplat.tv - Conteúdo 18+',
       user: req.user || null, // Adiciona isso
       jogos: jogosHoje,
       tempoRestante: tempoRestante.texto,
@@ -43,7 +43,7 @@ exports.resHome = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Erro no controller resHome:', {
+    console.error('Erro no controller resAdulto:', {
       message: error.message,
       stack: error.stack
     });

@@ -45,7 +45,7 @@
   100% { opacity: 1; }
 }
   </style>
-  <%- include('../partials/header') %>
+  <%- include('../partials/header', {isAuthenticated: !!user}) %>
   <%- include('../partials/navigation', {qrCodeBase64: qrCodeBase64}) %>
   
   <main>

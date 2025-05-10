@@ -3,6 +3,8 @@ const {updateTransmissoes} = require('./src/services/updateTransmissoes');
 const registroDiarioService = require('./src/services/system');
 const {atualizarPlacaresNoBanco} = require('./src/services/atualizaPartida');
 const { atualizarStatusPagamentos } = require('./src/services/mercadoPagoService');
+const errorHandler = require('./src/middlewares/errorHandler');
+const authRoutes = require('./src/routes/authRoutes');
 const express = require('express');
 const session = require('express-session');
 const path = require('path');
@@ -28,18 +30,18 @@ app.use((req, res, next) => {
     // Se o UUID não estiver no cookie, gera um novo UUID
     uuidUsuario = uuidv4();
 
-    // Armazenar o UUID no cookie com tempo de expiração de 1 hora
+    // Armazenar o UUID no cookie
     res.cookie('uuid', uuidUsuario, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', // Garante que o cookie seja enviado apenas por HTTPS
+      secure: process.env.NODE_ENV === 'production',
       maxAge: 3600000, // 1 hora
+      sameSite: 'strict' // Proteção adicional contra CSRF
     });
   }
-
-  // Armazenar o UUID para ser usado nas próximas requisições
-  req.uuidUsuario = uuidUsuario;
-
-  next(); // Passa para a próxima função/middleware
+  
+  // Tornar o UUID disponível para as views/templates
+  res.locals.uuid = uuidUsuario;
+  next();
 });
 
 // Configuração da sessão
@@ -60,7 +62,11 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(cors());
+// No backend (app.js)
+app.use(cors({
+  origin: 'http://localhost:3000',
+  credentials: true
+}));
 // Configurações adicionais do servidor (não alterei)
 require('./config/server')(app); // Manter a configuração do servidor conforme já está
 
@@ -75,7 +81,10 @@ app.set('view engine', 'ejs');
 // Proxy reverso para nossoplayeronlinehd.com
 app.use('/', require('./src/routes/streamRoutes'));
 app.use('/admin', require('./src/routes/adminRoutes'));
-
+app.use('/api/auth', authRoutes);
+app.get('/api/get-uuid', (req, res) => {
+  res.json({ uuid: req.cookies.uuid });
+});
 // Rotina de inicialização
 async function iniciarRotinas() {
   console.log('🔄 Iniciando rotina diária...');
@@ -128,7 +137,8 @@ app.get('/', (req, res) => {
   res.send('Servidor rodando!');
 });
 
-
+// Middleware de erro (deve ser o último)
+app.use(errorHandler);
 // No final do arquivo, modifique a parte que inicia o servidor:
 app.listen(3000, '0.0.0.0', async () => {
   console.log(`Servidor rodando em http://localhost:${port}`);

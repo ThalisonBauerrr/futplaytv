@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <%- include('../../partials/admin/head', { pageTitle: pageTitle }) %>
+    <style>
+    .partida-info {
+        background-color: #262727;
+        border-radius: 5px;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+    .team-display {
+        display: flex;
+        align-items: center;
+        margin: 10px 0;
+    }
+    .team-logo {
+        width: 40px;
+        height: 40px;
+        object-fit: contain;
+        margin-right: 10px;
+    }
+    .vs {
+        margin: 0 15px;
+        font-weight: bold;
+    }
+    /* Alertas animados */
+    .alert {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1000;
+        min-width: 300px;
+        opacity: 0;
+        transform: translateX(100%);
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    .alert.show {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    
+    .alert-success {
+        background-color: #28a745;
+        color: white;
+        border-color: #23923d;
+    }
+    
+    .alert-danger {
+        background-color: #dc3545;
+        color: white;
+        border-color: #c82333;
+    }
+    
+    .close-alert {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 1.5rem;
+        position: absolute;
+        top: 5px;
+        right: 10px;
+        cursor: pointer;
+    }
+        .btn-back {
+        background-color: #6c757d;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 4px;
+        font-weight: 500;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s ease;
+    }
+
+    .btn-back:hover {
+        background-color: #5a6268;
+        color: white;
+        text-decoration: none;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .btn-back i {
+        transition: transform 0.2s ease;
+    }
+
+    .btn-back:hover i {
+        transform: translateX(-2px);
+    }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <%- include('../../partials/admin/sidebar', { activePage: 'jogos' }) %>
+        
+        <main class="main-content">
+            <header class="content-header">
+                <h1><i class="fas fa-satellite-dish"></i> <%= pageTitle %></h1>
+                <p class="breadcrumb">Adicionar nova transmissão</p>
+            </header>
+
+            <% if (success) { %>
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle"></i> <%= success %>
+                </div>
+            <% } %>
+            
+            <% if (error) { %>
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-circle"></i> <%= error %>
+                </div>
+            <% } %>
+
+            <section class="content-body">
+                <!-- Exibe os dados da partida (somente leitura) -->
+                <div class="card">
+                    <div class="d-flex align-items-center">
+                        <div class="team-display">
+                            <% if (partida.time_casa_imagem) { %>
+                                <img src="<%= partida.time_casa_imagem %>" class="team-logo" alt="<%= partida.time_casa_nome %>">
+                            <% } %>
+                            <span><%= partida.time_casa_nome %></span>
+                        </div>
+                        
+                        <span class="vs">X</span>
+                        
+                        <div class="team-display">
+                            <% if (partida.time_visitante_imagem) { %>
+                                <img src="<%= partida.time_visitante_imagem %>" class="team-logo" alt="<%= partida.time_visitante_nome %>">
+                            <% } %>
+                            <span><%= partida.time_visitante_nome %></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Formulário para nova transmissão -->
+                <div class="card">
+                    <div class="card-header">
+                        <h4>Nova Transmissão</h4>
+                    </div>
+                    <div class="card-body">
+                        <form action="/admin/jogos/adicionar-transmissao/<%= partida.id %>" method="POST">
+                            <div class="form-group">
+                                <label for="name">Nome da Transmissão</label>
+                                <input type="text" class="form-control" id="name" name="name" 
+                                       placeholder="Ex: ESPN, SporTV, YouTube" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="url">Link da Transmissão</label>
+                                <input type="url" class="form-control" id="url" name="url" 
+                                       placeholder="https://..." required>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save"></i> Salvar Transmissão
+                            </button>
+                            
+                            <a href="/admin/jogos?hoje=true"></a>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-arrow-left"></i> Voltar
+                            </button>  
+                            </a>
+                        </form>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+   
+</body>
+
+<script>
+    // Fecha alertas automaticamente após 5 segundos
+    document.addEventListener('DOMContentLoaded', function() {
+        const successAlert = document.getElementById('successAlert');
+        const errorAlert = document.getElementById('errorAlert');
+        
+        if (successAlert) {
+            setTimeout(() => {
+                fadeOutAlert(successAlert);
+            }, 5000);
+        }
+        
+        if (errorAlert) {
+            setTimeout(() => {
+                fadeOutAlert(errorAlert);
+            }, 5000);
+        }
+    });
+    
+    function fadeOutAlert(alertElement) {
+        alertElement.style.opacity = '0';
+        alertElement.style.transform = 'translateX(100%)';
+        setTimeout(() => {
+            alertElement.remove();
+        }, 300);
+    }
+    
+    function closeAlert(id) {
+        const alert = document.getElementById(id);
+        if (alert) {
+            fadeOutAlert(alert);
+        }
+    }
+</script>
+</html>

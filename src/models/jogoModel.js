@@ -176,12 +176,33 @@ const buscarJogosAoVivo = async () => {
   }
 };
 
-const verificarCanais = async (transmissoes) => {
+const verificarCanais = async (transmissoes, jogoId) => {
   let connection;
   try {
-    if (!transmissoes?.length) return [];
-
     connection = await db.getConnection();
+
+    // 1. Verifica primeiro na tabela `canais_jogos` pelo `id_partida`
+    const [canaisJogos] = await connection.query(`
+      SELECT 
+        idcanais_jogos,
+        name,
+        url
+      FROM canais_jogos
+      WHERE id_partida = ?
+    `, [jogoId]);
+
+    // Se encontrou registros, retorna no formato esperado
+    if (canaisJogos?.length > 0) {
+      return canaisJogos.map((canal) => ({
+        id: canal.idcanais_jogos, // Mapeia `idcanais_jogos` para `id` (caso necessário)
+        name: canal.name,
+        urls: [{ url: canal.url, index: 0 }], // Assume que só há uma URL (índice 0)
+        logo: null // Se não tiver logo na tabela, pode ser null ou adicionar se existir
+      }));
+    }
+
+    // 2. Se não encontrou em `canais_jogos`, faz a busca normal nos `canais`
+    if (!transmissoes?.length) return [];
 
     const termosBusca = transmissoes.flatMap((transmissao) => {
       const nomeBase = transmissao.trim().toLowerCase();
@@ -207,10 +228,10 @@ const verificarCanais = async (transmissoes) => {
       const urls = [];
       for (let i = 0; i <= 6; i++) {
         const url = canal[`url_${i}`];
-        if (url?.trim()) urls.push({ url, index: i }); // ← inclui o índice original
+        if (url?.trim()) urls.push({ url, index: i });
       }
       return { ...canal, urls };
-    })
+    });
 
   } catch (error) {
     console.error('Erro ao buscar canais ao vivo:', error);
@@ -219,6 +240,7 @@ const verificarCanais = async (transmissoes) => {
     connection?.release();
   }
 };
+
 module.exports = {
   buscarJogoPorId,
   buscarJogosDeHoje,

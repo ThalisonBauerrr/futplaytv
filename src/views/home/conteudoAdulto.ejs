@@ -3,22 +3,70 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Futplay.TV - HOME</title>
+  <title><%= pageTitle %></title>
   <link rel="stylesheet" href="/css/main.css">
   <link rel="stylesheet" href="/css/home/navigation.css">
   <link rel="stylesheet" href="/css/home/header.css">
+  <link rel="stylesheet" href="/css/home/adult.css">
+
   <link rel="icon" href="/assets/favicon.ico" type="image/x-icon">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-  <%- include('../partials/header') %>
+  <%- include('../partials/header', {isAuthenticated: !!user}) %>
   <%- include('../partials/navigation', {qrCodeBase64: qrCodeBase64}) %>
   
   <main>
-    <h1 class="page-title">Conteudo Adulto</h1>
-
+    <h1 class="page-title">Conteúdo Adulto</h1>
+    
+    <div class="channels-container">
+      <!-- Card 1 -->
+      <div class="channel-card adult-content">
+        <div class="channel-banner" style="background-image: url('https://via.placeholder.com/300x450/333/666?text=Canal+1')">
+          <div class="channel-age-badge">+18</div>
+        </div>
+        <div class="channel-info">
+          <h3 class="channel-title">Playboy TV</h3>
+          <div class="channel-meta">
+            <span class="channel-category">Adulto</span>
+            <span class="channel-viewers">2.4K assistindo</span>
+          </div>
+        </div>
+      </div>
+  
+      <!-- Card 2 -->
+      <div class="channel-card adult-content">
+        <div class="channel-banner" style="background-image: url('/assets/logos/canal_sextreme.png')">
+          <div class="channel-age-badge">+18</div>
+        </div>
+        <div class="channel-info">
+          <h3 class="channel-title">Sextreme</h3>
+          <div class="channel-meta">
+            <span class="channel-category">Adulto</span>
+            <span class="channel-viewers">1.8K assistindo</span>
+          </div>
+        </div>
+      </div>
+  
+      <!-- Card 3 -->
+      <div class="channel-card adult-content">
+        <div class="channel-banner" style="background-image: url('/assets/logos/canal_sexyhot.png')">
+          <div class="channel-age-badge">+18</div>
+        </div>
+        <div class="channel-info">
+          <h3 class="channel-title">SexyHot</h3>
+          <div class="channel-meta">
+            <span class="channel-category">Adulto</span>
+            <span class="channel-viewers">3.1K assistindo</span>
+          </div>
+        </div>
+      </div>
+  
+      <!-- Adicione mais cards conforme necessário -->
+    </div>
   </main>
+  
   <%- include('../partials/footer') %>
   <script src="/js/script.js"></script>
   <script>

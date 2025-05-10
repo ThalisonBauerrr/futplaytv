@@ -5,16 +5,38 @@
       <i class="fas fa-bars"></i>
     </div>
     <div class="nav-logo">
-      FUTplay.TV
+      <a href="/" class="nav-logo">FUTplay.TV</a>
     </div>
   </div>
   
   <div class="user-area">
-    <span class="register-text">Cadastre-se</span>
-    <a href="#" class="nav-link login-btn" id="loginTrigger">
-      <i class="fas fa-sign-in-alt nav-icon"></i>
-      <span class="nav-text">Login</span>
-    </a>
+    <% if (user) { %>
+      <div class="profile-dropdown">
+        <button class="profile-btn">
+          <i class="fas fa-user-circle profile-icon"></i>
+          <span class="profile-text">Minha Conta</span>
+          <i class="fas fa-caret-down"></i>
+        </button>
+        <div class="dropdown-content">
+          <a href="/perfil" class="dropdown-item">
+            <i class="fas fa-user"></i> Perfil
+          </a>
+          <a href="/configuracoes" class="dropdown-item">
+            <i class="fas fa-cog"></i> Configurações
+          </a>
+          <div class="dropdown-divider"></div>
+          <a href="/logout" class="dropdown-item logout-btn">
+            <i class="fas fa-sign-out-alt"></i> Sair
+          </a>
+        </div>
+      </div>
+    <% } else { %>
+      <span class="register-text" id="registerTrigger">Cadastre-se</span>
+      <a href="#" class="nav-link login-btn" id="loginTrigger">
+        <i class="fas fa-sign-in-alt nav-icon"></i>
+        <span class="nav-text">Login</span>
+      </a>
+    <% } %>
   </div>
 </header>
 
@@ -29,7 +51,29 @@
       <button type="submit" class="login-submit">Entrar</button>
       <div class="login-options">
         <a href="#">Esqueci minha senha</a>
-        <a href="#">Criar conta</a>
+        <a href="#" class="switch-to-register">Criar conta</a>
+      </div>
+    </form>
+  </div>
+</div>
+<!-- Modal de Cadastro (deve ficar junto com o modal de login, fora do header) -->
+<div class="register-modal" id="registerModal">
+  <div class="modal-content">
+    <span class="close-modal">&times;</span>
+    <h2 class="page-title">Cadastre-se</h2>
+    <form class="register-form">
+      <label for="">ID unico </label>
+      <input type="text" id="uuidInput" placeholder="UUID" required readonly>
+      <input type="email" id="registerEmail" placeholder="E-mail" required>
+      <input type="password" id="registerPassword" placeholder="Senha" required>
+      <input type="password" id="confirmPassword" placeholder="Confirmar Senha" required>
+      <div class="terms-checkbox">
+        <input type="checkbox" id="acceptTerms" required>
+        <label for="acceptTerms">Eu concordo com os <a href="#">Termos de Serviço</a> e <a href="#">Política de Privacidade</a></label>
+      </div>
+      <button type="submit" class="register-submit">Criar conta</button>
+      <div class="register-options">
+        <span>Já tem uma conta? <a href="#" class="switch-to-login">Fazer login</a></span>
       </div>
     </form>
   </div>

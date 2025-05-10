@@ -1,4 +1,4 @@
-const db = require('../../config/database');  // Conexão com o banco de dados
+const db = require('../../config/database');  // Importa o pool de conexões MySQL
 
 // Função para exibir a página de login
 exports.showLoginPage = (req, res) => {
@@ -11,7 +11,8 @@ exports.showLoginPage = (req, res) => {
   });
 };
 
-exports.login = (req, res) => {
+// Função para processar o login
+exports.login = async (req, res) => {
   const { login, senha } = req.body || {};
 
   if (!login || !senha) {
@@ -22,25 +23,30 @@ exports.login = (req, res) => {
   const loginTrimmed = login.trim();
   const senhaTrimmed = senha.trim();
 
-  db.get("SELECT * FROM admin WHERE login = ?", [loginTrimmed], (err, row) => {
-    if (err) {
-      console.error('Erro ao verificar usuário:', err);
-      req.flash('error', 'Erro interno no servidor');
-      return res.redirect('/admin/login');
-    }
+  try {
+    // Consulta para verificar o usuário usando o pool de conexões
+    const [rows] = await db.execute(
+      "SELECT * FROM admin WHERE login = ?", 
+      [loginTrimmed]
+    );
 
-    if (!row || row.senha !== senhaTrimmed) {
+    if (rows.length === 0 || rows[0].senha !== senhaTrimmed) {
       req.flash('error', 'Credenciais inválidas');
       return res.redirect('/admin/login');
     }
 
+    const user = rows[0];
     req.session.isAdmin = true;
-    req.session.userLevel = row.nivel;
+    req.session.userLevel = user.nivel;
     
     return res.redirect('/admin');
-  });
-};
 
+  } catch (err) {
+    console.error('Erro ao verificar usuário:', err);
+    req.flash('error', 'Erro interno no servidor');
+    return res.redirect('/admin/login');
+  }
+};
 
 // Função para exibir a página principal de administração (após login)
 exports.showAdminPage = (req, res) => {

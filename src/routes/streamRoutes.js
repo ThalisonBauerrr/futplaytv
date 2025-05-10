@@ -2,9 +2,12 @@ const express = require('express');
 const router = express.Router();
 const streamController = require('../controllers/streamController');
 const resHomeController = require('../controllers/homeController');
+const adultoController = require('../controllers/adultoController');
+
 const jogoModel = require('../models/jogoModel'); // Importa o jogoModel
 router.get('/', resHomeController.resHome);
 router.get('/home', resHomeController.resHome);
+router.get('/adulto', adultoController.resAdulto)
 router.get('/player/:id', streamController.resPlayer);
 
 router.get('/atualizar-jogos', async (req, res) => {

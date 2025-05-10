@@ -273,6 +273,48 @@ const atualizarQRCodeETempo = async (uuid, paymentId, qrCode, minutos) => {
     if (connection) await connection.release();
   }
 };
+const buscarPorUUID = async (uuid) => {
+  try {
+    const [rows] = await db.query(
+      "SELECT id, tempo_inicio, tempo_fim, updated_at FROM usuarios WHERE uuid = ? LIMIT 1", 
+      [uuid]
+    );
+    return rows[0] || null;
+  } catch (error) {
+    console.error('Erro ao buscar usuário por UUID:', error);
+    throw error;
+  }
+};
+const atualizarTempoAcesso = async (uuid) => {
+  try {
+    const minutesFree = parseInt(process.env.MINUTES_FREE) || 10;
+    const [result] = await db.query(
+      `UPDATE usuarios 
+       SET updated_at = NOW() 
+       WHERE uuid = ?`,
+      [uuid]
+    );
+    return result.affectedRows > 0;
+  } catch (error) {
+    console.error('Erro ao atualizar tempo de acesso:', error);
+    throw error;
+  }
+};
+const atualizarUltimoAcesso = async (uuid) => {
+  try {
+    const [result] = await db.query(
+      "UPDATE usuarios SET ultimo_acesso = NOW() WHERE uuid = ?",
+      [uuid]
+    );
+    return result.affectedRows > 0;
+  } catch (error) {
+    console.error('Erro ao atualizar último acesso:', error);
+    throw error;
+  }
+};
+
+
+
 module.exports = {
   verificarUsuario,
   atualizarTempoFim,
@@ -283,5 +325,8 @@ module.exports = {
   getDadosCompletos,
   atualizarDadosPagamento,
   getDadosParaQRCode,
-  atualizarQRCodeETempo
+  atualizarQRCodeETempo,
+  buscarPorUUID,
+  atualizarTempoAcesso,
+  atualizarUltimoAcesso,
 };
