@@ -191,6 +191,8 @@ const verificarCanais = async (transmissoes, jogoId) => {
       WHERE id_partida = ?
     `, [jogoId]);
 
+    console.log(jogoId)
+    
     // Se encontrou registros, retorna no formato esperado
     if (canaisJogos?.length > 0) {
       return canaisJogos.map((canal) => ({

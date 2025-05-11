@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', function() {
     return parts.length === 2 ? parts.pop().split(';').shift() : null;
   }
 
-  // ========== GERENCIAMENTO DE UI DE LOGIN ==========
+  // ========== GERENCIAMENTO DE UI DE LOGIN ==========  
   function updateUIForLoginState(isLoggedIn) {
     const userArea = document.querySelector('.user-area');
     if (!userArea) return;
@@ -147,7 +147,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // Atualiza a UI inicialmente
   updateUIForLoginState(userIsLoggedIn);
 
-  // ========== GERENCIAMENTO DE MODAIS ==========
+  // ========== GERENCIAMENTO DE MODAIS ==========  
   const modalManager = (function() {
     // Elementos
     const elements = {
@@ -409,10 +409,10 @@ document.addEventListener('DOMContentLoaded', function() {
       // Verificação de hash na URL
       if (window.location.hash === '#register') {
         openModal(elements.registerModal);
-        history.replaceState(null, null, ' ');
+        history.replaceState(null, null, ' '); // Limpa o hash
       } else if (window.location.hash === '#login') {
         openModal(elements.loginModal);
-        history.replaceState(null, null, ' ');
+        history.replaceState(null, null, ' '); // Limpa o hash
       }
     }
   
@@ -424,60 +424,64 @@ document.addEventListener('DOMContentLoaded', function() {
     };
   })();
 
-  // ========== GERENCIAMENTO DO MENU MOBILE ==========
+  // ========== GERENCIAMENTO DO MENU MOBILE ==========  
   const menuManager = (function() {
-    // Elementos
     const elements = {
       menuToggle: document.querySelector('.menu-toggle'),
-      menuIcon: document.querySelector('.menu-toggle i'),
+      menuIcon: document.querySelector('.menu-toggle svg'),
       mainNav: document.querySelector('.main-nav'),
       menuOverlay: document.querySelector('.menu-overlay'),
-      navLinks: document.querySelectorAll('.nav-link')
+      navLinks: document.querySelectorAll('.nav-link'),
+      menuCloseBtn: document.querySelector('.menu-close-btn') // Adicionando o botão de fechar
     };
-
-    // Funções
+  
     function toggleMenu() {
       const isActive = elements.mainNav.classList.toggle('active');
       elements.menuToggle.classList.toggle('active');
       document.body.style.overflow = isActive ? 'hidden' : '';
       document.body.classList.toggle('menu-open', isActive);
-
+  
       if (elements.menuIcon) {
         elements.menuIcon.classList.toggle('fa-bars', !isActive);
         elements.menuIcon.classList.toggle('fa-times', isActive);
       }
     }
-
+  
+    // Função para fechar o menu
     function closeMenu() {
       elements.mainNav.classList.remove('active');
       elements.menuToggle.classList.remove('active');
       document.body.style.overflow = '';
       document.body.classList.remove('menu-open');
-
+  
       if (elements.menuIcon) {
         elements.menuIcon.classList.remove('fa-times');
         elements.menuIcon.classList.add('fa-bars');
       }
     }
-
-    // Event Listeners
+  
+    // Adicionando o evento de clique no botão de fechar
     function setupEventListeners() {
       if (elements.menuToggle) elements.menuToggle.addEventListener('click', toggleMenu);
       if (elements.menuOverlay) elements.menuOverlay.addEventListener('click', closeMenu);
       
+      // Evento para o botão de fechar o menu
+      if (elements.menuCloseBtn) {
+        elements.menuCloseBtn.addEventListener('click', closeMenu);
+      }
+  
       elements.navLinks.forEach(link => {
         link.addEventListener('click', closeMenu);
       });
     }
-
+  
     return {
       init: setupEventListeners
     };
   })();
 
-  // ========== INICIALIZAÇÃO ==========
+  // ========== INICIALIZAÇÃO ==========  
   modalManager.init();
   menuManager.init();
   modalManager.checkAuth();
-
 });

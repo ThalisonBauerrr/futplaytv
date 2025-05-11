@@ -170,9 +170,7 @@
 
   /* ===== RESPONSIVIDADE ===== */
   @media (max-width: 480px) {
-    .menu-toggle {
-      display: flex;
-    }
+
 
     .nav-logo {
       font-size: 1.3rem;
@@ -188,9 +186,7 @@
     
   }
   @media (max-width: 768px) {
-    .menu-toggle {
-      display: flex;
-    }
+
     .site-header {
       padding: 0 1rem;
     }
@@ -206,9 +202,7 @@
   }
 
   @media (min-width: 992px) {
-    .menu-toggle {
-      display: none;
-    }
+
     .site-header {
       left: 280px;
     }

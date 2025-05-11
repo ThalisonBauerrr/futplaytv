@@ -41,14 +41,14 @@ exports.resPlayer = async (req, res) => {
     const resultado = await jogoModel.verificarCanais(jogo.transmissoes,jogoId);
     const jogosAoVivo = await jogoModel.buscarJogosAoVivo();
 
-    console.log(resultado)
     // 7. Renderizar página
+    console.log(resultado)
     res.render('home/player', {
-      pageTitle: `Futplat.tv - ${jogo.timeCasa} vs ${jogo.timeVisitante}`,
+      pageTitle: `Futplat.tv - ${jogo.time_casa} vs ${jogo.time_visitante}`,
       user: req.user || null, // Adiciona isso
       jogo: jogo,
       jogos: jogosAoVivo,
-      canais: resultado, // <- aqui muda de "urls" para "canais"
+      canais: resultado, 
       tempoRestante: tempoRestante.texto,
       tempoExpirado: tempoRestante.expirado,
       tempoFim: usuario.tempo_fim,
@@ -84,11 +84,16 @@ function calcularTempoRestante(dataFim) {
 }
 function precisaGerarQRCode(usuario) {
   if (!usuario) return true;
-  
-  const agora = new Date();
-  const tempoExpirado = new Date(usuario.tempo_fim) < agora;
-  
-  return !usuario.idpayment || tempoExpirado;
+
+  const agora = new Date(); // Obtém a data e hora atual
+  const tempoExpirado = new Date(usuario.tempo_fim) < agora; // Verifica se o tempo de expiração é anterior ao momento atual
+
+  // Verifica se o pagamento não foi feito ou se o tempo expirou
+  // Adiciona a verificação se a expiração não ocorreu hoje
+  const expirouHoje = new Date(usuario.tempo_fim).toDateString() === agora.toDateString();
+
+  // Só gera um novo QR Code se o idpayment for falso ou se o tempo expirou e a expiração não foi hoje
+  return !usuario.idpayment || (tempoExpirado && !expirouHoje);
 }
 async function gerenciarQRCode(uuidUsuario) {
   try {

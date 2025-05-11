@@ -156,8 +156,12 @@ module.exports = {
             const [competicoes] = await db.execute('SELECT id, nome_padrao FROM competicoes ORDER BY nome_padrao');
             
             // Busca todos os canais disponíveis
-            const [canais] = await db.execute('SELECT id, name FROM canais WHERE url IS NOT NULL ORDER BY name');
-    
+            const [canais] = await db.execute(
+                `SELECT id, name FROM canais 
+                 WHERE url_0 IS NOT NULL OR url_1 IS NOT NULL OR url_2 IS NOT NULL 
+                 OR url_3 IS NOT NULL OR url_4 IS NOT NULL OR url_5 IS NOT NULL OR url_6 IS NOT NULL
+                 ORDER BY name`
+            );
             // Extrai os nomes únicos dos times existentes nas partidas
             const [timesCasa] = await db.execute(
                 `SELECT DISTINCT time_casa_nome as nome, time_casa_imagem as imagem 
@@ -342,7 +346,7 @@ module.exports = {
             );
 
             req.flash('success', 'Transmissão adicionada com sucesso!');
-            res.redirect(`/admin/jogos/editar/${id}`);
+            res.redirect(`/admin/jogos/`);
         } catch (error) {
             console.error('Erro ao adicionar transmissão:', error);
             req.flash('error', 'Erro ao adicionar transmissão');

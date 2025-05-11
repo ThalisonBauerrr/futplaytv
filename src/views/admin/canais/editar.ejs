@@ -141,13 +141,13 @@
                 <p class="breadcrumb">Canais / Editar / <%= canal.name %></p>
             </header>
 
-            <% if (locals.success) { %>
+            <% if (success) { %>
                 <div class="alert alert-success">
                     <i class="fas fa-check-circle"></i> <%= success %>
                 </div>
             <% } %>
             
-            <% if (locals.error) { %>
+            <% if (error) { %>
                 <div class="alert alert-danger">
                     <i class="fas fa-exclamation-circle"></i> <%= error %>
                 </div>

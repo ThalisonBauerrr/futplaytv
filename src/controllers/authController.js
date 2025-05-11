@@ -7,29 +7,29 @@ class AuthController {
   static async registrar(req, res, next) {
     try {
       const { uuid, email, password } = req.body;
-
+  
       // Verificação de UUID
       const usuarioExistente = await UsuarioModel.buscarPorUUID(uuid);
       if (!usuarioExistente) {
         return res.status(400).json({ error: 'UUID inválido' });
       }
-
+  
       // Criptografia da senha
       const hashedPassword = await bcrypt.hash(password, 10);
-
+  
       // Criação do usuário
-      const usuario = await UsuarioCadastradoModel.criar({
-        id_uuid: usuarioExistente.id,
-        email,
-        senha: hashedPassword
-      });
-
+      const usuario = await UsuarioCadastradoModel.criar(
+        usuarioExistente.id,  // Passando id do usuário existente
+        email, 
+        hashedPassword  // Senha criptografada
+      );
+  
       // Geração do token
       const token = gerarToken({
         userId: usuario.id,
         email: usuario.email
       });
-
+  
       res.status(201).json({
         success: true,
         token,
@@ -37,7 +37,7 @@ class AuthController {
           email: usuario.email
         }
       });
-
+  
     } catch (error) {
       next(error);
     }

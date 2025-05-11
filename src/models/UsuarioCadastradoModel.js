@@ -3,6 +3,7 @@ const db = require('../../config/database');
 class UsuarioCadastradoModel {
   static async criar(id_uuid, email, senha) {
     try {
+      // Confirmação da query SQL com valores corretos
       const [result] = await db.query(
         `INSERT INTO usuarios_cadastrados 
          (id_uuid, email, senha) 

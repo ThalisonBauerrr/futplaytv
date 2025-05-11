@@ -7,7 +7,8 @@ exports.showLoginPage = (req, res) => {
   
   res.render('admin/login', {
     pageTitle: 'Login - Painel de Administração',
-    error: error // Passa a mensagem de erro para a view
+    success: req.flash('success'),
+    error: req.flash('error')
   });
 };
 
@@ -58,7 +59,9 @@ exports.showAdminPage = (req, res) => {
 
   res.render('admin/index', {
     pageTitle: 'Painel de Administração',
-    userLevel: req.session.userLevel  // Passando o nível de acesso para a página
+    userLevel: req.session.userLevel,
+    success: req.flash('success'),
+    error: req.flash('error')
   });
 };
 
