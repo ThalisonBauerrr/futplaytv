@@ -1,5 +1,5 @@
 const usuarioModel = require('../models/usuarioModel');
-const { criarPagamentoQR } = require('../services/mercadoPagoService');
+const { criarPagamentoQR,verificarStatusPagamento } = require('../services/mercadoPagoService');
 const jogoModel = require('../models/jogoModel');
 const { v4: uuidv4 } = require('uuid');
 require('dotenv').config();
