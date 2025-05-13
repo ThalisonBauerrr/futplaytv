@@ -278,7 +278,7 @@ class usuarioModel {
       // Executa o update no banco de dados
       const [result] = await db.query(`
         UPDATE usuarios 
-        SET payment_qr_code = NULL, 
+        SET 
             payment_status = NULL,
             purchase = 0
         WHERE uuid = ?
