@@ -58,9 +58,7 @@ class AuthController {
       if (!senhaValida) {
         return res.status(401).json({ error: 'Credenciais inválidas' });
       }
-  
-      // 3. Atualiza tempo_fim E updated_at (em uma única query)
-      await UsuarioModel.atualizarTempoAcesso(usuario.uuid);
+
   
       // 4. Gera token JWT
       const token = gerarToken({

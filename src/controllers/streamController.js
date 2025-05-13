@@ -42,7 +42,6 @@ exports.resPlayer = async (req, res) => {
     const jogosAoVivo = await jogoModel.buscarJogosAoVivo();
 
     // 7. Renderizar página
-    console.log(resultado)
     res.render('home/player', {
       pageTitle: `Futplat.tv - ${jogo.time_casa} vs ${jogo.time_visitante}`,
       user: req.user || null, // Adiciona isso
@@ -64,7 +63,6 @@ exports.resPlayer = async (req, res) => {
   }
 };
 
-
 function calcularTempoRestante(dataFim) {
   const agora = new Date();
   const fim = new Date(dataFim);
@@ -82,41 +80,119 @@ function calcularTempoRestante(dataFim) {
     expirado: false
   };
 }
-function precisaGerarQRCode(usuario) {
-  if (!usuario) return true;
 
-  const agora = new Date(); // Obtém a data e hora atual
-  const tempoExpirado = new Date(usuario.tempo_fim) < agora; // Verifica se o tempo de expiração é anterior ao momento atual
-
-  // Verifica se o pagamento não foi feito ou se o tempo expirou
-  // Adiciona a verificação se a expiração não ocorreu hoje
-  const expirouHoje = new Date(usuario.tempo_fim).toDateString() === agora.toDateString();
-
-  // Só gera um novo QR Code se o idpayment for falso ou se o tempo expirou e a expiração não foi hoje
-  return !usuario.idpayment || (tempoExpirado && !expirouHoje);
-}
 async function gerenciarQRCode(uuidUsuario) {
   try {
     // 1. Busca dados do usuário
-    const usuario = await usuarioModel.getDadosParaQRCode(uuidUsuario);
-    
-    // 2. Verifica se precisa gerar novo QR Code
-    if (!precisaGerarQRCode(usuario)) {
-      return usuario.payment_qr_code;
-    }
+    const usuario = await usuarioModel.getDadosCompletos(uuidUsuario);
+    const statusPagamento = await verificarStatusPagamento(usuario.idpayment);
+    const tempoFim = new Date(usuario.tempo_fim);
+    const hoje = new Date();
 
-    // 3. Gera novo QR Code se necessário
-    console.log('🆕 Gerando novo QR Code...');
-    const { qrCodeBase64, paymentId } = await criarPagamentoQR(uuidUsuario, 1.50);
+    if (usuario.tempo_fim) {
+      // Normaliza as duas datas, zerando horas, minutos e segundos
+      const tempoFimDate = new Date(tempoFim.getFullYear(), tempoFim.getMonth(), tempoFim.getDate());
+      const hojeDate = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
+
+      // Se tempo_fim for menor que hoje, adiciona tempo
+      if (tempoFimDate < hojeDate) {
+        console.log('O tempo_fim é menor que hoje. Adicionando tempo...');
+
+        // Adiciona tempo (por exemplo, 10 minutos)
+        await usuarioModel.atualizarTempoAcesso(uuidUsuario, process.env.MINUTES_FREE);
+        
+        // Retorna o QR Code atual
+        return usuario.payment_qr_code;
+      }
+    }
+    switch (statusPagamento) {
+      case 'approved':
+        console.log('Pagamento aprovado');
+        
+        // 1. Verificar se usuario.purchase é 0 e usuario.payment_status é 'approved'
+        if (usuario.purchase === '0' && usuario.payment_status === 'approved') {
+          
+          // 2. Atualizar status de pagamento para 'approved' na tabela usuario
+          const updatePaymentStatus = await usuarioModel.atualizarStatusPagamento(uuidUsuario, 'approved');
+          if (updatePaymentStatus) {
+            console.log('Status de pagamento atualizado para "approved".');
+          } else {
+            console.log('Erro ao atualizar o status de pagamento.');
+          }
     
-    await usuarioModel.atualizarQRCodeETempo(
-      uuidUsuario,
-      paymentId,
-      qrCodeBase64,
-      process.env.MINUTES_FREE || 10
-    );
+          // 3. Adicionar 2 horas no tempo_fim da tabela usuario
+          const adicionarTempo = await usuarioModel.atualizarTempoAcesso(uuidUsuario, 120); // 120 minutos = 2 horas
+          if (adicionarTempo) {
+            console.log('Tempo de acesso atualizado com 2 horas.');
+          } else {
+            console.log('Erro ao adicionar 2 horas ao tempo de acesso.');
+          }
     
-    return qrCodeBase64;
+          // 4. Atualizar usuario.purchase para 1, indicando que o pagamento foi entregue
+          const updatePurchase = await usuarioModel.atualizarPurchase(uuidUsuario, 1);
+          if (updatePurchase) {
+            console.log('Pagamento foi marcado como entregue (purchase = 1).');
+          } else {
+            console.log('Erro ao atualizar a entrega do pagamento.');
+          }
+        }else if (usuario.tempo_fim < hoje && usuario.purchase === '1') {
+            console.log('O tempo_fim é menor que o horário atual. Resetando o QR Code, status de pagamento e purchase.');
+
+              const sucesso = await usuarioModel.resetarCamposUsuario(uuidUsuario);
+
+          if (sucesso) {
+              console.log(`[${uuidUsuario}] Campos resetados com sucesso: QR Code, status de pagamento e purchase.`);
+              const { qrCodeBase64, paymentId } = await criarPagamentoQR(uuidUsuario, 1.50);
+      
+              // Atualiza o QR Code e tempo
+              await usuarioModel.atualizarQRCodeETempo(
+                uuidUsuario,
+                paymentId,
+                qrCodeBase64,
+                process.env.MINUTES_FREE || 10
+              );
+          } else {
+            console.log(`[${uuidUsuario}] Nenhum campo foi resetado. Verifique os dados.`);
+          }
+        } else {
+          console.log('Condição não atendida: usuario.purchase não é 0 ou usuario.payment_status não é "approved".');
+        }
+        break;
+        case 'pending':
+          console.log('Pagamento pendente');
+          break;
+        case 'in_process':
+          console.log('Pagamento em processo');
+          break;
+        case 'rejected':
+          console.log('Pagamento rejeitado');
+          break;
+        case 'cancelled':
+          console.log('Pagamento cancelado');
+              const { qrCodeBase64, paymentId } = await criarPagamentoQR(uuidUsuario, 1.50);
+      
+              // Atualiza o QR Code e tempo
+              await usuarioModel.atualizarQRCodeETempo(
+                uuidUsuario,
+                paymentId,
+                qrCodeBase64,
+                process.env.MINUTES_FREE || 10
+              );
+  
+          break;
+        case 'refunded':
+          console.log('Pagamento reembolsado');
+          break;
+        case 'charged_back':
+          console.log('Pagamento com chargeback');
+          break;
+        default:
+          console.log('Status desconhecido');
+      }
+
+    // Se nenhuma condição acima for atendida, retorna o QR Code atual
+    console.log('Nenhuma atualização necessária. Retornando QR Code atual...');
+    return usuario.payment_qr_code;
 
   } catch (error) {
     console.error('Erro no gerenciamento do QR Code:', error);

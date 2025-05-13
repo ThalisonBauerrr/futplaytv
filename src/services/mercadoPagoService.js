@@ -48,18 +48,16 @@ async function criarPagamentoQR(uuidUsuario, valor) {
     }
 }
 
-// Função para verificar se um pagamento foi aprovado
+// Função para verificar e atualizar o status dos pagamentos
 async function atualizarStatusPagamentos() {
   let connection;
   try {
     connection = await db.getConnection();
     
-    // 1. Buscar todos os pagamentos não finalizados
+    // 1. Buscar todos os pagamentos não finalizados ou com status não confirmado
     const [pagamentos] = await connection.query(`
       SELECT id, idpayment, payment_status
       FROM usuarios 
-      WHERE payment_status IS NULL 
-      OR payment_status NOT IN ('approved', 'rejected', 'refunded', 'cancelled','pending')
     `);
 
     let atualizados = 0;
@@ -67,34 +65,34 @@ async function atualizarStatusPagamentos() {
     // 2. Verificar cada pagamento
     for (const pagamento of pagamentos) {
       try {
+        // Exibir o ID do pagamento que está sendo verificado
+        //console.log(`Verificando pagamento com ID: ${pagamento.id}`);
+        
         if (!pagamento.idpayment) {
           console.log(`[${pagamento.id}] Sem ID de pagamento, ignorando...`);
           continue;
         }
 
-        // Consulta o Mercado Pago
-        const { status } = (await verificarStatusPagamento(pagamento.idpayment));
-        
+        // Consulta o Mercado Pago para obter o status atual
+        const  status = await verificarStatusPagamento(pagamento.idpayment);
+  
         // Se o status já é o mesmo, ignora
         if (pagamento.payment_status === status) {
-          console.log(`[${pagamento.id}] Status já atualizado (${status}), ignorando...`);
+          //console.log(`[${pagamento.id}] Status já atualizado (${status}), ignorando...`);
           continue;
         }
 
-        // Atualiza somente se mudou
-        await connection.query(`
+        // Atualiza o status do pagamento no banco de dados
+        const [result] = await connection.query(`
           UPDATE usuarios 
           SET payment_status = ?, 
               updated_at = NOW() 
           WHERE id = ?
         `, [status, pagamento.id]);
 
-        console.log(`[${pagamento.id}] Status atualizado: ${pagamento.payment_status} → ${status}`);
-        atualizados++;
-
-        // Libera acesso se aprovado
-        if (status === 'approved') {
-          await liberarAcessoUsuario(pagamento.id);
+        if (result.affectedRows > 0) {
+          console.log(`[${pagamento.id}] Status atualizado: ${pagamento.payment_status} → ${status}`);
+          atualizados++;
         }
 
       } catch (error) {
@@ -113,29 +111,24 @@ async function atualizarStatusPagamentos() {
 }
 
 
-// Função auxiliar para liberar acesso do usuário (exemplo)
-async function liberarAcessoUsuario(userId) {
- console.log('LIBERANDO ACESSO')
-}
-
 // Mantenha sua função existente para verificar um pagamento individual
 async function verificarStatusPagamento(paymentId) {
   try {
-      const pagamento = await mercadopago.payment.get(paymentId);
-      const status = pagamento.response.status;
+    // Consulta o status do pagamento via Mercado Pago
+    const pagamento = await mercadopago.payment.get(paymentId);
+    const status = pagamento.response.status;
 
-      console.log('Status do pagamento:', status);
+    if (!status) {
+      throw new Error('Status do pagamento não encontrado');
+    }
 
-      return { 
-          aprovado: status === 'approved', 
-          status: status,
-          pagamento: pagamento.response 
-      };
+    // Log do status para depuração
+    //console.log(`[MP] Status do pagamento (${paymentId}): ${status}`);
 
+    return status;  // Retorna o status do pagamento
   } catch (error) {
-      console.error('Erro ao consultar o pagamento:', error);
-      throw new Error('Erro ao verificar status do pagamento');
+    console.error('Erro ao consultar o pagamento:', error);
+    throw new Error('Erro ao verificar status do pagamento');
   }
 }
-
 module.exports = { criarPagamentoQR, verificarStatusPagamento, atualizarStatusPagamentos };

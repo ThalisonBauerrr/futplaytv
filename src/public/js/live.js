@@ -87,7 +87,7 @@ document.addEventListener('DOMContentLoaded', function() {
     modal.style.backdropFilter = 'blur(10px)';
     
     modal.innerHTML = `
-      <div style="background: var(--bg-darker); padding: 2rem; border-radius: 12px; max-width: 500px; text-align: center; border: 1px solid var(--accent-primary); transform: scale(0.9); transition: transform 0.3s ease;">
+      <div style="margin:30px; background: var(--bg-darker); padding: 2rem; border-radius: 12px; max-width: 400px; text-align: center; border: 1px solid var(--accent-primary); transform: scale(0.9); transition: transform 0.3s ease;">
         <button id="close-modal" style="position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: var(--text-secondary); font-size: 1.5rem; cursor: pointer;">×</button>
         <h2 style="color: var(--accent-primary); margin-bottom: 1rem; font-size: 1.5rem;">Apoie o SportStream</h2>
         <p style="margin-bottom: 1.5rem;">Faça uma doação para ajudar a manter o site no ar e continuar assistindo todos os jogos sem interrupções.</p>

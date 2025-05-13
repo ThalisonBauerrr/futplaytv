@@ -25,6 +25,7 @@
         "helmet": "^7.2.0",
         "http-proxy-middleware": "^3.0.5",
         "jsonwebtoken": "^9.0.2",
+        "luxon": "^3.6.1",
         "mercadopago": "^1.5.17",
         "morgan": "^1.10.0",
         "mysql-server": "^1.0.5",

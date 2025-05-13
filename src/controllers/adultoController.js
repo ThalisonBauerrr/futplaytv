@@ -100,7 +100,7 @@ async function gerenciarQRCode(uuidUsuario) {
       uuidUsuario,
       paymentId,
       qrCodeBase64,
-      process.env.MINUTES_FREE || 10
+      0
     );
     
     return qrCodeBase64;
