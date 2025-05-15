@@ -1,7 +1,6 @@
-
-const {updateTransmissoes} = require('./src/services/updateTransmissoes');
+const { updateTransmissoes } = require('./src/services/updateTransmissoes');
 const registroDiarioService = require('./src/services/system');
-const {atualizarPlacaresNoBanco} = require('./src/services/atualizaPartida');
+const { atualizarPlacaresNoBanco } = require('./src/services/atualizaPartida');
 const { atualizarStatusPagamentos } = require('./src/services/mercadoPagoService');
 const errorHandler = require('./src/middlewares/errorHandler');
 const authRoutes = require('./src/routes/authRoutes');
@@ -85,36 +84,25 @@ app.use('/api/auth', authRoutes);
 app.get('/api/get-uuid', (req, res) => {
   res.json({ uuid: req.cookies.uuid });
 });
+
 // Rotina de inicialização
-async function iniciarRotinas() {
+async function getGradejogos() {
   console.log('🔄 Iniciando rotina diária...');
   const resultado = await registroDiarioService.executarRotinaDiaria();
 
-    if(resultado.status==="skipped"){
-      console.log(resultado.message)
-    }else if(resultado.status==="success"){
-      console.log(resultado.message)
-      await updateTransmissoes()
-    }
+  if (resultado.status === "skipped") {
+    console.log(resultado.message);
+  } else if (resultado.status === "success") {
+    console.log(resultado.message);
+    await updateTransmissoes();
+  }
 }
 
-// Agenda a rotina diária às 1:00 AM (Brasília)
-async function agendarRotinaDiaria() {
-  cron.schedule('0 1 * * *', async () => {
-    console.log('⏰ Disparando rotina programada (1:00 AM BRT)');
-    await iniciarRotinas();
-  }, {
-    scheduled: true,
-    timezone: "America/Sao_Paulo"
-  });
-}
-
-
-
+// Cron para rodar a cada 1 minuto e também ao iniciar o servidor
 async function crons() {
-  cron.schedule('*/1 * * * *', async () => { // Rodando a cada 5 minutos
+  cron.schedule('* * * * *', async () => { // Rodando a cada 1 minuto
     try {
-      //console.log('🔄 Verificando status de pagamentos...');
+      // Verifica status de pagamentos
       const resultado = await atualizarStatusPagamentos();
       console.log(`🔄 ${resultado.atualizados}/${resultado.total} pagamentos verificados`);
     } catch (error) {
@@ -122,27 +110,37 @@ async function crons() {
     }
 
     try {
+      // Atualiza placares
       await atualizarPlacaresNoBanco();
-      //console.log(`✅ ${atualizadas} placares atualizados com sucesso!`);
     } catch (error) {
       console.error('❌ Erro ao atualizar placares:', error.message);
     }
-    
   }, {
     timezone: "America/Sao_Paulo"
   });
+
+  // Cron para rodar todos os dias às 00:00
+  cron.schedule('0 0 * * *', async () => { // Rodando todos os dias às 00:00
+    console.log('🌙 Executando rotina diária às 00:00...');
+    await getGradejogos();
+  }, {
+    timezone: "America/Sao_Paulo"
+  });
+
+  // Chama a rotina de inicialização ao iniciar o servidor
+  await getGradejogos();
 }
 
+// Inicia o servidor
 app.get('/', (req, res) => {
   res.send('Servidor rodando!');
 });
 
 // Middleware de erro (deve ser o último)
 app.use(errorHandler);
-// No final do arquivo, modifique a parte que inicia o servidor:
+
+// Inicia o servidor e chama as rotinas
 app.listen(3000, '0.0.0.0', async () => {
   console.log(`Servidor rodando em http://localhost:${port}`);
-  await iniciarRotinas();
-  await agendarRotinaDiaria();
-  await crons();
+  await crons();  // Inicia as rotinas de cron
 });
