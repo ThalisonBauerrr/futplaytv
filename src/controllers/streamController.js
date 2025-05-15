@@ -136,7 +136,7 @@ async function gerenciarQRCode(uuidUsuario, usuario, inserted) {
           // Atualiza usuario.purchase para 1
           const updatePurchase = await usuarioModel.atualizarPurchase(uuidUsuario, 1);
           console.log(updatePurchase ? 'Pagamento foi marcado como entregue (purchase = 1).' : 'Erro ao atualizar a entrega do pagamento.');
-        } else if (usuario.tempo_fim < hoje && usuario.purchase === '1') {
+        } else if (tempoFimDate < hojeDate && usuario.purchase === '1') {
           console.log('O tempo_fim é menor que o horário atual. Resetando o QR Code, status de pagamento e purchase.');
 
           const sucesso = await usuarioModel.resetarCamposUsuario(uuidUsuario);
@@ -159,7 +159,7 @@ async function gerenciarQRCode(uuidUsuario, usuario, inserted) {
 
       case 'pending':
         console.log('Pagamento pendente');
-        if (usuario.tempo_fim < hoje) {
+        if (tempoFimDate < hojeDate) {
           console.log('Já passou 24 horas do teste, adicionando + '+process.env.MINUTES_FREE+' minutos.');
           const sucesso = await usuarioModel.atualizarTempoAcesso(uuidUsuario, process.env.MINUTES_FREE);
           console.log(sucesso ? 'Tempo adicionado.' : `[${uuidUsuario}] Nenhum campo foi resetado. Verifique os dados.`);
