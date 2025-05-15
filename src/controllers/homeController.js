@@ -86,8 +86,12 @@ async function gerenciarQRCode(uuidUsuario, usuario, inserted) {
     const tempoFim = new Date(usuario.tempo_fim);
     const hoje = new Date();
 
+    // Normaliza as duas datas, zerando hora, minuto e segundo
+    const tempoFimDate = new Date(tempoFim.getFullYear(), tempoFim.getMonth(), tempoFim.getDate());
+    const hojeDate = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
+
     // 1. Se o tempo de fim for menor que hoje, adiciona tempo
-    if (tempoFim < hoje) {
+    if (tempoFimDate < hojeDate) {
       console.log('O tempo_fim é menor que hoje. Adicionando tempo...');
       await usuarioModel.atualizarTempoAcesso(uuidUsuario, process.env.MINUTES_FREE);
       return usuario.payment_qr_code;
@@ -152,8 +156,13 @@ async function gerenciarQRCode(uuidUsuario, usuario, inserted) {
           console.log('Já passou 24 horas do teste, adicionando + '+process.env.MINUTES_FREE+' minutos.');
           const sucesso = await usuarioModel.atualizarTempoAcesso(uuidUsuario, process.env.MINUTES_FREE);
           console.log(sucesso ? 'Tempo adicionado.' : `[${uuidUsuario}] Nenhum campo foi resetado. Verifique os dados.`);
+          resultado = await usuarioModel.getDadosCompletos(uuidUsuario)
+          qrCodeBase64 = resultado.payment_qr_code
+          
         } else {
           console.log('Pagamento pendente, mas já ganhou os 12 minutos diários!');
+          resultado = await usuarioModel.getDadosCompletos(uuidUsuario)
+          qrCodeBase64 = resultado.payment_qr_code
         }
         break;
 
@@ -183,6 +192,7 @@ async function gerenciarQRCode(uuidUsuario, usuario, inserted) {
       case 'charged_back':
           console.log('Pagamento com chargeback');
           break;
+      
       default:
         console.log(`Status desconhecido do pagamento: ${statusPagamento}`);
     }

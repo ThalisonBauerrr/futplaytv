@@ -59,63 +59,51 @@ function calcularTempoRestante(dataFim) {
   const agora = new Date();
   const fim = new Date(dataFim);
   const diffMs = fim - agora;
-  
+
   if (diffMs <= 0) {
     return { texto: "Tempo expirado", expirado: true };
   }
-  
+
   const minutos = Math.floor(diffMs / 60000);
   const segundos = Math.floor((diffMs % 60000) / 1000);
-  
+
   return {
     texto: `${minutos}m ${segundos}s`,
     expirado: false
   };
 }
 
-async function gerenciarQRCode(uuidUsuario) {
+// Função de gerenciamento do QR Code
+async function gerenciarQRCode(uuidUsuario, usuario, inserted) {
   try {
-    // 1. Busca dados do usuário
-    let statusPagamento = "num"; // Inicializa com um status padrão
-    const usuario = await usuarioModel.getDadosCompletos(uuidUsuario);
-
-    // Se o usuário tem um ID de pagamento, verifica o status do pagamento
+    // Verifica o status de pagamento do usuário
+    let statusPagamento = "num"; // Status padrão
     if (usuario.idpayment != null) {
       statusPagamento = await verificarStatusPagamento(usuario.idpayment);
     }
 
-    // Comparar as datas
     const tempoFim = new Date(usuario.tempo_fim);
     const hoje = new Date();
 
-    // 2. Se o tempo de fim for menor que hoje, adiciona mais tempo
-    if (usuario.tempo_fim) {
-      // Normaliza as duas datas (zerando hora, minuto e segundo)
-      const tempoFimDate = new Date(tempoFim.getFullYear(), tempoFim.getMonth(), tempoFim.getDate());
-      const hojeDate = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
+    // Normaliza as duas datas, zerando hora, minuto e segundo
+    const tempoFimDate = new Date(tempoFim.getFullYear(), tempoFim.getMonth(), tempoFim.getDate());
+    const hojeDate = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
 
-      // Se tempo_fim for menor que hoje, adiciona tempo
-      if (tempoFimDate < hojeDate) {
-        console.log('O tempo_fim é menor que hoje. Adicionando tempo...');
-
-        // Adiciona tempo (por exemplo, 10 minutos)
-        await usuarioModel.atualizarTempoAcesso(uuidUsuario, process.env.MINUTES_FREE);
-
-        // Retorna o QR Code atual
-        return usuario.payment_qr_code;
-      }
+    // 1. Se o tempo de fim for menor que hoje, adiciona tempo
+    if (tempoFimDate < hojeDate) {
+      console.log('O tempo_fim é menor que hoje. Adicionando tempo...');
+      await usuarioModel.atualizarTempoAcesso(uuidUsuario, process.env.MINUTES_FREE);
+      return usuario.payment_qr_code;
     }
 
-    // Declare qrCodeBase64 e paymentId fora do switch para evitar a duplicação de declarações
+    // Declare qrCodeBase64 e paymentId uma vez para evitar redeclaração
     let qrCodeBase64, paymentId;
 
-    // 3. Verifica o status do pagamento e realiza as ações conforme o status
+    // 2. Verificar o status de pagamento e realizar ações conforme o status
     switch (statusPagamento) {
       case 'num':
         // Se não houver pagamento, cria um novo QR Code
-        const pagamento = await criarPagamentoQR(uuidUsuario, 1.50);
-        qrCodeBase64 = pagamento.qrCodeBase64;
-        paymentId = pagamento.paymentId;
+        ({ qrCodeBase64, paymentId } = await criarPagamentoQR(uuidUsuario, 1.50));
 
         await usuarioModel.atualizarDadosPagamento(
           uuidUsuario,
@@ -128,44 +116,27 @@ async function gerenciarQRCode(uuidUsuario) {
       case 'approved':
         console.log('Pagamento aprovado');
 
-        // Verifica se usuario.purchase é 0 e usuario.payment_status é 'approved'
         if (usuario.purchase === '0' && usuario.payment_status === 'approved') {
           // Atualiza status de pagamento para 'approved'
           const updatePaymentStatus = await usuarioModel.atualizarStatusPagamento(uuidUsuario, 'approved');
-          if (updatePaymentStatus) {
-            console.log('Status de pagamento atualizado para "approved".');
-          } else {
-            console.log('Erro ao atualizar o status de pagamento.');
-          }
+          console.log(updatePaymentStatus ? 'Status de pagamento atualizado para "approved".' : 'Erro ao atualizar o status de pagamento.');
 
           // Adiciona 2 horas no tempo_fim
           const adicionarTempo = await usuarioModel.atualizarTempoAcesso(uuidUsuario, 120); // 120 minutos = 2 horas
-          if (adicionarTempo) {
-            console.log('Tempo de acesso atualizado com 2 horas.');
-          } else {
-            console.log('Erro ao adicionar 2 horas ao tempo de acesso.');
-          }
+          console.log(adicionarTempo ? 'Tempo de acesso atualizado com 2 horas.' : 'Erro ao adicionar 2 horas ao tempo de acesso.');
 
           // Atualiza usuario.purchase para 1
           const updatePurchase = await usuarioModel.atualizarPurchase(uuidUsuario, 1);
-          if (updatePurchase) {
-            console.log('Pagamento foi marcado como entregue (purchase = 1).');
-          } else {
-            console.log('Erro ao atualizar a entrega do pagamento.');
-          }
+          console.log(updatePurchase ? 'Pagamento foi marcado como entregue (purchase = 1).' : 'Erro ao atualizar a entrega do pagamento.');
         } else if (usuario.tempo_fim < hoje && usuario.purchase === '1') {
           console.log('O tempo_fim é menor que o horário atual. Resetando o QR Code, status de pagamento e purchase.');
 
           const sucesso = await usuarioModel.resetarCamposUsuario(uuidUsuario);
-
           if (sucesso) {
             console.log(`[${uuidUsuario}] Campos resetados com sucesso: QR Code, status de pagamento e purchase.`);
             // Cria um novo QR Code
-            const pagamentoNovo = await criarPagamentoQR(uuidUsuario, 1.50);
-            qrCodeBase64 = pagamentoNovo.qrCodeBase64;
-            paymentId = pagamentoNovo.paymentId;
+            ({ qrCodeBase64, paymentId } = await criarPagamentoQR(uuidUsuario, 1.50));
 
-            // Atualiza o QR Code e tempo
             await usuarioModel.atualizarDadosPagamento(
               uuidUsuario,
               paymentId,
@@ -175,34 +146,28 @@ async function gerenciarQRCode(uuidUsuario) {
           } else {
             console.log(`[${uuidUsuario}] Nenhum campo foi resetado. Verifique os dados.`);
           }
-        } else {
-          console.log('Condição não atendida: usuario.purchase não é 0 ou usuario.payment_status não é "approved".');
         }
         break;
 
       case 'pending':
         console.log('Pagamento pendente');
         if (usuario.tempo_fim < hoje) {
-          console.log('Já passou 24 horas do teste, adicionando +10 minutos.');
+          console.log('Já passou 24 horas do teste, adicionando + '+process.env.MINUTES_FREE+' minutos.');
           const sucesso = await usuarioModel.atualizarTempoAcesso(uuidUsuario, process.env.MINUTES_FREE);
-          console.log(sucesso);
-          if (sucesso) {
-            console.log('Tempo adicionado para: ' + uuidUsuario);
-          } else {
-            console.log(`[${uuidUsuario}] Nenhum campo foi resetado. Verifique os dados.`);
-          }
+          console.log(sucesso ? 'Tempo adicionado.' : `[${uuidUsuario}] Nenhum campo foi resetado. Verifique os dados.`);
+          resultado = await usuarioModel.getDadosCompletos(uuidUsuario)
+          qrCodeBase64 = resultado.payment_qr_code
+          
         } else {
           console.log('Pagamento pendente, mas já ganhou os 12 minutos diários!');
+          resultado = await usuarioModel.getDadosCompletos(uuidUsuario)
+          qrCodeBase64 = resultado.payment_qr_code
         }
         break;
 
       case 'cancelled':
         console.log('Pagamento cancelado');
-        const pagamentoCancelado = await criarPagamentoQR(uuidUsuario, 1.50);
-        qrCodeBase64 = pagamentoCancelado.qrCodeBase64;
-        paymentId = pagamentoCancelado.paymentId;
-
-        // Atualiza o QR Code e tempo
+        ({ qrCodeBase64, paymentId } = await criarPagamentoQR(uuidUsuario, 1.50));
         await usuarioModel.atualizarDadosPagamento(
           uuidUsuario,
           paymentId,
@@ -228,24 +193,10 @@ async function gerenciarQRCode(uuidUsuario) {
           break;
       
       default:
-        console.log('Pagamento ' + statusPagamento);
-        if (usuario.tempo_fim < hoje) {
-          console.log('Já passou 24 horas do teste, adicionando +12 min.');
-          const sucesso = await usuarioModel.atualizarTempoAcesso(uuidUsuario, process.env.MINUTES_FREE);
-          console.log(sucesso);
-          if (sucesso) {
-            console.log('Tempo adicionado para: ' + uuidUsuario);
-          } else {
-            console.log(`[${uuidUsuario}] Nenhum campo foi resetado. Verifique os dados.`);
-          }
-        } else {
-          console.log('Pagamento ' + statusPagamento + ', mas já ganhou os 12 minutos diários!');
-        }
+        console.log(`Status desconhecido do pagamento: ${statusPagamento}`);
     }
 
-    // Se nenhuma condição acima for atendida, retorna o QR Code atual
-    console.log('Nenhuma atualização necessária. Retornando QR Code atual...');
-    return usuario.payment_qr_code;
+    return qrCodeBase64;
 
   } catch (error) {
     console.error('Erro no gerenciamento do QR Code:', error);
