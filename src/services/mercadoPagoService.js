@@ -5,47 +5,49 @@ const db = require('../../config/database'); // Usando MySQL com mysql2/promise
 // Configuração do Mercado Pago com seu Access Token
 mercadopago.configurations.setAccessToken(process.env.MERCADO_PAGO_ACCESS_TOKEN);
 
-// Função para criar pagamento e gerar QR Code
 async function criarPagamentoQR(uuidUsuario, valor) {
-    let connection;
-    try {
-        connection = await db.getConnection();
-        
-        const payment_data = {
-            transaction_amount: Number(valor),
-            description: "Acesso à transmissão ao vivo",
-            payment_method_id: "pix", // Usando PIX como forma de pagamento
-            payer: {
-                first_name: "Cliente", // Nome fictício
-                last_name: "Futebol",  // Sobrenome fictício
-                email: "cliente@dominio.com" // E-mail fictício para evitar o erro
-            }
-        };
+  let connection;
+  try {
+    connection = await db.getConnection();
 
-        // Cria o pagamento no Mercado Pago
-        const pagamento = await mercadopago.payment.create(payment_data);
-        console.log('Pagamento criado:', pagamento.response.id);
+    const payment_data = {
+      transaction_amount: Number(valor),
+      description: "Acesso à transmissão ao vivo",
+      payment_method_id: "pix",
+      payer: {
+        first_name: "Cliente",
+        last_name: "Futebol",
+        email: "cliente@dominio.com"
+      }
+    };
 
-        // Recupera o QR Code e o payment_id
-        const qrCodeBase64 = pagamento.response.point_of_interaction.transaction_data.qr_code_base64;
-        const paymentId = pagamento.response.id;
-        const status = pagamento.response.status;
-            
-        // Salva o QR Code e o payment_id no banco de dados usando MySQL
-        const updateQuery = 'UPDATE usuarios SET idpayment = ?, payment_qr_code = ? WHERE uuid = ?';
-        const [result] = await connection.query(updateQuery, [paymentId, qrCodeBase64, uuidUsuario]);
+    const pagamento = await mercadopago.payment.create(payment_data);
+    console.log('Pagamento criado:', pagamento.response.id);
 
-        if (result.affectedRows === 0) {
-            throw new Error('Nenhum usuário foi atualizado - UUID não encontrado');
-        }
+    const qrCodeBase64 = pagamento.response.point_of_interaction.transaction_data.qr_code_base64;
+    const paymentId = pagamento.response.id;
+    const status = pagamento.response.status;
+    const payloadPix = pagamento.response.point_of_interaction.transaction_data.qr_code;
 
-        return { qrCodeBase64, paymentId, status }; // Retorna o QR Code em base64 e o ID do pagamento
-    } catch (error) {
-        console.error('Erro ao criar pagamento:', error);
-        throw error; // Retorna o erro para ser tratado
-    } finally {
-        if (connection) connection.release();
+    // Atualiza a query para incluir payment_pix_payload
+    const updateQuery = `
+      UPDATE usuarios 
+      SET idpayment = ?, payment_qr_code = ?, payment_pix_payload = ?
+      WHERE uuid = ?`;
+
+    const [result] = await connection.query(updateQuery, [paymentId, qrCodeBase64, payloadPix, uuidUsuario]);
+
+    if (result.affectedRows === 0) {
+      throw new Error('Nenhum usuário foi atualizado - UUID não encontrado');
     }
+
+    return { qrCodeBase64, paymentId, status, payloadPix };
+  } catch (error) {
+    console.error('Erro ao criar pagamento:', error);
+    throw error;
+  } finally {
+    if (connection) connection.release();
+  }
 }
 
 // Função para verificar e atualizar o status dos pagamentos

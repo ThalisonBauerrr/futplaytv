@@ -18,336 +18,502 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   </head>
   <style>
-    
-/* Estilos personalizados para o player */
-.player-container {
-  display: grid;
-  grid-template-columns: 1fr 350px;
-  gap: 2rem;
-}
-
-.video-main {
-  width: 100%;
-}
-
-.video-player {
-  width: 100%;
-  aspect-ratio: 16/9;
-  background: #000;
-  border-radius: 12px;
-  overflow: hidden;
-  position: relative;
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
-}
-
-.player-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.5rem;
-}
-
-.match-teams {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.team {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.team-logo {
-  width: 40px;
-  height: 40px;
-}
-
-.vs {
-  font-weight: bold;
-  color: var(--accent-primary);
-  margin: 0 0.5rem;
-}
-
-.match-score {
-  background: var(--accent-primary);
-  color: var(--bg-darker);
-  padding: 0.25rem 0.75rem;
-  border-radius: 4px;
-  font-weight: bold;
-}
-
-/* Sidebar direita com jogos */
-.live-games-sidebar {
-  background: var(--bg-light);
-  padding: 1.5rem;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  height: fit-content;
-}
-
-.sidebar-title {
-  color: var(--accent-primary);
-  margin-bottom: 1.5rem;
-  font-size: 1.2rem;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.sidebar-title i {
-  font-size: 1rem;
-}
-
-/* Cards de jogos ao vivo */
-.live-game-card {
-  background: var(--bg-darker);
-  border-radius: 8px;
-  padding: 1rem;
-  margin-bottom: 1rem;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  transition: all 0.3s ease;
-}
-
-.live-game-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 5px 15px rgba(0, 255, 136, 0.1);
-}
-
-.game-teams-small {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 0.5rem;
-}
-
-.team-small {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.25rem;
-  flex: 1;
-}
-
-.team-small span {
-  font-size: 0.9rem;
-  text-align: center;
-  order: 2; /* Garante que o texto fica abaixo */
-}
-
-.team-logo-small {
-  width: 24px;
-  height: 24px;
-  order: 1; /* Garante que o logo fica acima */
-}
-
-.vs-small {
-  font-weight: bold;
-  color: var(--accent-primary);
-  margin: 0 0.5rem;
-  font-size: 0.8rem;
-}
-
-.game-score {
-  font-weight: bold;
-  font-size: 0.9rem;
-}
-
-.game-status {
-  font-size: 0.75rem;
-  color: var(--accent-primary);
-  margin-bottom: 0.5rem;
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-}
-
-.game-status.live {
-  color: #ff5555;
-}
-
-.game-status.live::before {
-  content: '';
-  display: inline-block;
-  width: 6px;
-  height: 6px;
-  background: #ff5555;
-  border-radius: 50%;
-  margin-right: 0.25rem;
-  animation: pulse 1.5s infinite;
-}
-
-.watch-btn-small {
-  display: block;
-  width: 100%;
-  padding: 0.5rem;
-  background: var(--accent-primary);
-  color: var(--bg-darker);
-  border: none;
-  border-radius: 4px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  text-decoration: none;
-}
-
-.watch-btn-small:hover {
-  background: #00e676;
-  transform: translateY(-2px);
-}
-
-/* Informações do jogo principal */
-.player-info {
-  margin-top: 2rem;
-}
-
-.info-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1rem;
-  margin-top: 1rem;
-}
-
-.info-item {
-  background: var(--bg-light);
-  padding: 0.75rem;
-  border-radius: 6px;
-  font-size: 0.85rem;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.info-label {
-  color: var(--text-secondary);
-  font-size: 0.75rem;
-  margin-bottom: 0.25rem;
-}
-.ad-image {
-  width: 20px;
-  height: 20px;
-  margin-left: 10px;
-}
-/* Responsividade */
-@media (max-width: 992px) {
+  /* Estilos personalizados para o player */
   .player-container {
-    grid-template-columns: 1fr;
+    display: grid;
+    grid-template-columns: 1fr 350px;
+    gap: 2rem;
   }
-  
+
+  .video-main {
+    width: 100%;
+  }
+
+  .video-player {
+    width: 100%;
+    aspect-ratio: 16/9;
+    background: #000;
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+  }
+
+  .player-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+  }
+
+  .match-teams {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .team {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .team-logo {
+    width: 40px;
+    height: 40px;
+  }
+
+  .vs {
+    font-weight: bold;
+    color: var(--accent-primary);
+    margin: 0 0.5rem;
+  }
+
+  .match-score {
+    background: var(--accent-primary);
+    color: var(--bg-darker);
+    padding: 0.25rem 0.75rem;
+    border-radius: 4px;
+    font-weight: bold;
+  }
+
+  /* Sidebar direita com jogos */
   .live-games-sidebar {
+    background: var(--bg-light);
+    padding: 1.5rem;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    height: fit-content;
+  }
+
+  .sidebar-title {
+    color: var(--accent-primary);
+    margin-bottom: 1.5rem;
+    font-size: 1.2rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .sidebar-title i {
+    font-size: 1rem;
+  }
+
+  /* Cards de jogos ao vivo - Versão vertical melhorada */
+  .live-game-card {
+    background: var(--bg-darker);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.3s ease;
+  }
+
+  .live-game-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 255, 136, 0.1);
+  }
+
+  .game-status {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  .game-status.live {
+    color: #ff5555;
+  }
+
+  .game-status.live::before {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    background: #ff5555;
+    border-radius: 50%;
+    animation: pulse 1.5s infinite;
+  }
+
+  .game-teams-vertical {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .team-vertical {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .team-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .team-logo-small {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+  }
+
+  .team-name-small {
+    font-size: 0.9rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 150px;
+  }
+
+  .team-score-small {
+    font-weight: bold;
+    font-size: 0.95rem;
+    min-width: 20px;
+    text-align: right;
+  }
+
+  .watch-btn-small {
+    display: block;
+    width: 100%;
+    padding: 0.5rem;
+    background: var(--accent-primary);
+    color: var(--bg-darker);
+    border: none;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+  }
+
+  .watch-btn-small:hover {
+    background: #00e676;
+    transform: translateY(-2px);
+  }
+
+  .watch-btn-small i {
+    margin-right: 5px;
+  }
+
+  /* Informações do jogo principal */
+  .player-info {
     margin-top: 2rem;
   }
+
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+
+  .info-item {
+    background: var(--bg-light);
+    padding: 0.75rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .info-label {
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .ad-image {
+    width: 20px;
+    height: 20px;
+    margin-left: 10px;
+  }
+
+
+
+
+  /* Container PIX */
+.pix-mobile-container {
+  display: none;
+  background: #1e2b38;
+  border-radius: 8px;
+  margin: 10px 0;
+  padding: 12px;
 }
 
-@keyframes pulse {
-  0% { opacity: 1; }
-  50% { opacity: 0.5; }
-  100% { opacity: 1; }
+/* Código PIX */
+.pix-code {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(0,0,0,0.2);
+  padding: 10px;
+  border-radius: 6px;
 }
+
+.pix-code span {
+  font-family: monospace;
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-grow: 1;
+}
+
+.pix-code button {
+  background: #00e676;
+  border: none;
+  color: #000;
+  padding: 6px 10px;
+  border-radius: 4px;
+  margin-left: 10px;
+  cursor: pointer;
+}
+
+#pix-modal {
+    /* Posicionamento */
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    
+    /* Estilo visual */
+    background: #00e676;
+    color: #000;
+    padding: 12px 24px;
+    border-radius: 30px;
+    font-weight: bold;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    
+    /* Camada */
+    z-index: 9999;
+    
+    /* Estado inicial */
+    display: none;
+    opacity: 0;
+    
+    /* Transição */
+    transition: opacity 0.3s ease;
+}
+
+/* Classe para mostrar */
+#pix-modal.show {
+  display: block;
+  opacity: 1;
+  transform: translateX(-50%) translateY(-10px);
+}
+
+
+  /* Responsividade */
+  @media (max-width: 992px) {
+    .player-container {
+      grid-template-columns: 1fr;
+    }
+    
+    .live-games-sidebar {
+      margin-top: 2rem;
+    }
+    .pix-mobile-container {
+    display: block;
+  }
+  }
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+  }
+
+@keyframes fadeInOut {
+  0% { opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { opacity: 0; display: none; }
+}
+
   </style>
   <%- include('../partials/header', {isAuthenticated: !!user}) %>
   <%- include('../partials/navigation', {qrCodeBase64: qrCodeBase64}) %>
   
-  <main>
-    <% if (jogo) { %>
-    <h1 class="page-title">Transmissão Ao Vivo</h1>
-    
-    <div class="player-container">
-      <!-- Conteúdo principal com o player -->
-      <div class="video-main">
-        <div class="player-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 1rem;">
-          <div class="match-teams" style="display: flex; align-items: center; justify-content: center; width: 100%; gap: 20px;">
-           
-      <!-- Time da casa -->
-      <div class="team home-team" style="display: flex; align-items: center; justify-content: flex-end; max-width: 35%; flex: 1;">
-        <img src="<%= jogo.time_casa_logo %>" alt="<%= jogo.time_casa %>" class="team-logo" style="width: 48px; height: 48px; margin-right: 10px;" id="logo-casa-<%= jogo.id %>">
-        <span style="font-weight: bold; text-align: right; white-space: nowrap;" id="nome-casa-<%= jogo.id %>"><%= jogo.time_casa %></span>
-      </div>
+    <main>
+      <% if (jogo) { %>
 
-      <!-- Placar centralizado -->
-      <div style="display: flex; flex-direction: column; align-items: center; min-width: 120px;">
-        <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.25rem;">AO VIVO</div>
-        <div style="background: var(--accent-primary); color: var(--bg-darker); padding: 0.25rem 1.5rem; border-radius: 20px; font-weight: bold; font-size: 1.25rem; text-align: center;" id="placar-<%= jogo.id %>">
-          <%= jogo.placar_casa %> - <%= jogo.placar_visitante %>
-        </div>
-        <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem;" id="tempo-<%= jogo.id %>"><%= jogo.tempo %></div>
-      </div>
 
-      <!-- Time visitante -->
-      <div class="team away-team" style="display: flex; align-items: center; justify-content: flex-start; max-width: 35%; flex: 1;">
-        <span style="font-weight: bold; text-align: left; margin-right: 10px;" id="nome-visitante-<%= jogo.id %>"><%= jogo.time_visitante %></span>
-        <img src="<%= jogo.time_visitante_logo %>" alt="<%= jogo.time_visitante %>" class="team-logo" style="width: 48px; height: 48px;" id="logo-visitante-<%= jogo.id %>">
-      </div>
-      <div id="game-id-<%= jogo.id %>" style="display: none;"><%= jogo.id %></div>
-
-      </div>
-
-        </div>
-
-        <div class="video-player stream-container">
-          <!-- Iframe inicia com a primeira URL do primeiro canal -->
-          <%
-          let streamInicial = null;
-        
-          if (canais && canais.length > 0) {
-            streamInicial = canais[0].urls.find(u => u.index === 0) || canais[0].urls.find(u => u.index === 4);
-          }
-        
-          const urlInicial = streamInicial?.url;
-          const indexInicial = streamInicial?.index;
-        %>
-        
-        <% if (streamInicial) { %>
-          <iframe 
-            id="stream-iframe"
-            src="<%= urlInicial %>"
-            referrerpolicy="strict-origin-when-cross-origin"
-            allow="encrypted-media;autoplay" allowfullscreen="" frameborder="0"
-            <%= indexInicial <= 3 ? 'sandbox="allow-scripts allow-same-origin"' : '' %>>
-          </iframe>
-        <% } else { %>
-          <div class="error-message">
-            <p>Não foi possível carregar o stream no momento.</p>
+        <div class="pix-mobile-container">
+          <div class="pix-code">
+            <span id="pix-key"><%= paymentPixPayload %></span>
+            <button id="copy-pix-btn">
+              <i class="fas fa-copy"></i>
+            </button>
           </div>
-        <% } %>
         </div>
-        
-        <!-- Overlay para capturar eventos se necessário
-        <iframe src="https://reidoscanais.cc/embed/?id=powercouple2025" allow="encrypted-media" 
-        allowfullscreen="" frameborder="0" width="100%" height="400"></iframe> 
-        -->
-        <div class="player-overlay" id="player-overlay"></div>
-        
-        <div style="margin-top: 20px;">
-          <% if (canais && canais.length > 0) { %>
-            <div class="channel-buttons">
-              <% canais.forEach((canal) => { %>
-                <% canal.urls.forEach((stream) => { 
-                  const isAtivo = stream.url === urlInicial;
-                  const showAdImage = stream.index >= 4 && stream.index <= 6;
-                %>
-                  <button class="channel-btn <%= isAtivo ? 'active' : '' %>" 
-                          data-channel="<%= stream.url %>"
-                          data-index-original="<%= stream.index %>">
-                    <i class="fas fa-satellite-dish"></i>
-                    <%= canal.name %>
-                    <% if (stream.index > 0) { %>
-                      <span> Alternativo <%= stream.index %></span>
-                    <% } %>
-                    <% if (showAdImage) { %>  <!-- Sempre exibe a imagem para canais com índice 4-6 -->
-                      <img src="/assets/ads40.png" alt="Publicidade" class="ad-image" style="width: 30px; height: 30px; margin-left: 10px;"/>
-                    <% } %>
-                  </button>
-                <% }); %>
-              <% }); %>
+
+      <div id="pix-modal" class="pix-modal">Chave PIX copiada!</div>
+      <h1 class="page-title">Transmissão Ao Vivo</h1>
+
+
+
+      <div class="player-container">
+        <div class="video-main">
+          <div
+            class="player-header"
+            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 1rem;"
+          >
+            <div
+              class="match-teams"
+              style="display: flex; align-items: center; justify-content: center; width: 100%; gap: 20px;"
+            >
+              <div
+                class="team home-team"
+                style="display: flex; align-items: center; justify-content: flex-end; max-width: 35%; flex: 1;"
+              >
+                <img
+                  src="<%= jogo.time_casa_logo %>"
+                  alt="<%= jogo.time_casa %>"
+                  class="team-logo"
+                  style="width: 48px; height: 48px; margin-right: 10px;"
+                  id="logo-casa-<%= jogo.id %>"
+                />
+                <span
+                  style="font-weight: bold; text-align: right; white-space: nowrap;"
+                  id="nome-casa-<%= jogo.id %>"
+                  ><%= jogo.time_casa %></span
+                >
+              </div>
+
+              <div style="display: flex; flex-direction: column; align-items: center; min-width: 120px;">
+                <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.25rem;">
+                  AO VIVO
+                </div>
+                <div
+                  style="background: var(--accent-primary); color: var(--bg-darker); padding: 0.25rem 1.5rem; border-radius: 20px; font-weight: bold; font-size: 1.25rem; text-align: center;"
+                  id="placar-<%= jogo.id %>"
+                >
+                  <%= jogo.placar_casa %> - <%= jogo.placar_visitante %>
+                </div>
+                <div
+                  style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem;"
+                  id="tempo-<%= jogo.id %>"
+                >
+                  <%= jogo.tempo %>
+                </div>
+              </div>
+
+              <div
+                class="team away-team"
+                style="display: flex; align-items: center; justify-content: flex-start; max-width: 35%; flex: 1;"
+              >
+                <span
+                  style="font-weight: bold; text-align: left; margin-right: 10px;"
+                  id="nome-visitante-<%= jogo.id %>"
+                  ><%= jogo.time_visitante %></span
+                >
+                <img
+                  src="<%= jogo.time_visitante_logo %>"
+                  alt="<%= jogo.time_visitante %>"
+                  class="team-logo"
+                  style="width: 48px; height: 48px;"
+                  id="logo-visitante-<%= jogo.id %>"
+                />
+              </div>
+              <div id="game-id-<%= jogo.id %>" style="display: none;"><%= jogo.id %></div>
             </div>
-          <% } else { %>
-            <p>Nenhum canal disponível para transmissão.</p>
-          <% } %>
-        </div>
-                
+          </div>
+
+          <div class="video-player stream-container">
+            <% 
+              let streamInicial = null;
+              let urlInicial = null;
+              let indexInicial = null;
+
+              if (canais && canais !== "expirado" && canais.length > 0) {
+                streamInicial = canais[0].urls.find((u) => u.index === 0) || canais[0].urls.find((u) => u.index === 4);
+                urlInicial = streamInicial?.url;
+                indexInicial = streamInicial?.index;
+              }
+            %>
+
+            <% if (canais === "expirado") { %>
+              <div
+                class="donation-message"
+                style="text-align: center; padding: 20px; color: white;"
+              >
+                <p style="font-size: 1.3rem; margin-bottom: 20px; text-align: center; margin-top: 50px;">
+                  ⚠️ O seu tempo gratuito diário chegou ao fim. Para continuar desfrutando das transmissões, faça uma doação e apoie o projeto.
+                </p>
+                <% if (qrCodeBase64) { %>
+                <img
+                  src="data:image/png;base64,<%= qrCodeBase64 %>"
+                  alt="QR Code para doação"
+                  style="max-width: 200px; margin: 0 auto; display: block;"
+                />
+                <% } else { %>
+                <p>QR code indisponível no momento.</p>
+                <% } %>
+              </div>
+            <% } else if (streamInicial) { %>
+              <iframe
+                id="stream-iframe"
+                src="<%= urlInicial %>"
+                referrerpolicy="strict-origin-when-cross-origin"
+                allow="encrypted-media;autoplay"
+                allowfullscreen
+                frameborder="0"
+                <%= indexInicial <= 3 ? 'sandbox="allow-scripts allow-same-origin"' : '' %>
+              ></iframe>
+            <% } else { %>
+              <div class="error-message" style="color: white; text-align: center; padding: 20px;">
+                <p>Não foi possível carregar o stream no momento.</p>
+              </div>
+            <% } %>
+          </div>
+
+          <div class="player-overlay" id="player-overlay"></div>
+
+          <div style="margin-top: 20px;">
+            <% if (canais !== "expirado" && canais && canais.length > 0) { %>
+              <div class="channel-buttons">
+                <% canais.forEach((canal) => { %>
+                  <% canal.urls.forEach((stream) => {
+                    const isAtivo = stream.url === urlInicial;
+                    const showAdImage = stream.index >= 4 && stream.index <= 6;
+                  %>
+                    <button
+                      class="channel-btn <%= isAtivo ? "active" : "" %>"
+                      data-channel="<%= stream.url %>"
+                      data-index-original="<%= stream.index %>"
+                    >
+                      <i class="fas fa-satellite-dish"></i>
+                      <%= canal.name %>
+                      <% if (stream.index > 0) { %>
+                      <span> Alternativo <%= stream.index %></span>
+                      <% } %>
+                      <% if (showAdImage) { %>
+                      <img
+                        src="/assets/ads40.png"
+                        alt="Publicidade"
+                        class="ad-image"
+                        style="width: 30px; height: 30px; margin-left: 10px;"
+                      />
+                      <% } %>
+                    </button>
+                  <% }); %>
+                <% }); %>
+              </div>
+            <% } else if (canais === "expirado") { %>
+              <p style="text-align: center; color: white; margin-top: 10px;">
+                Para continuar, por favor faça uma doação usando o QR code acima.
+              </p>
+            <% } else { %>
+              <p style="color: white; text-align: center;">Nenhum canal disponível para transmissão.</p>
+            <% } %>
+          </div> 
         <div class="player-info">
           <h2 class="player-info-title">
             <i class="fas fa-info-circle"></i>
@@ -404,32 +570,48 @@
           <i class="fas fa-tv"></i>
           Jogos Ao Vivo
         </h2>
-        
-
+                  
         <div id="games-list">
           <% jogos.forEach(function(jogo) { %>
             <div class="live-game-card" id="game-<%= jogo.id %>">
+              <!-- Status do jogo no topo esquerdo -->
               <div class="game-status <%= jogo.status === 'ao-vivo' ? 'live' : '' %>">
-                AO VIVO - <%= jogo.tempo %>
+                <% if(jogo.status === 'ao-vivo') { %>
+                  AO VIVO
+                <% } else { %>
+                  <%= jogo.status %>
+                <% } %>
+                <% if(jogo.tempo) { %> - <%= jogo.tempo %><% } %>
               </div>
-              <div class="game-teams-small">
-                <div class="team-small">
-                  <img src="<%= jogo.time_casa_imagem %>" alt="<%= jogo.time_casa_nome %>" class="team-logo-small">
-                  <span><%= jogo.time_casa_nome %></span>
+              
+              <!-- Times e placar em formato vertical -->
+              <div class="game-teams-vertical">
+                <!-- Time da casa -->
+                <div class="team-vertical">
+                  <div class="team-info">
+                    <img src="<%= jogo.time_casa_imagem %>" alt="<%= jogo.time_casa_nome %>" class="team-logo-small">
+                    <span class="team-name-small" title="<%= jogo.time_casa_nome %>"><%= jogo.time_casa_nome %></span>
+                  </div>
+                  <span class="team-score-small"><%= jogo.placar_casa %></span>
                 </div>
-                <span><%= jogo.placar_casa %><span class="vs-small">VS</span><%= jogo.placar_visitante %></span>
-                <div class="team-small" style="justify-content: flex-end;">
-                  <span><%= jogo.time_visitante_nome %></span>
-                  <img src="<%= jogo.time_visitante_imagem %>" alt="<%= jogo.time_visitante_nome %>" class="team-logo-small">
+                
+                <!-- Time visitante -->
+                <div class="team-vertical">
+                  <div class="team-info">
+                    <img src="<%= jogo.time_visitante_imagem %>" alt="<%= jogo.time_visitante_nome %>" class="team-logo-small">
+                    <span class="team-name-small" title="<%= jogo.time_visitante_nome %>"><%= jogo.time_visitante_nome %></span>
+                  </div>
+                  <span class="team-score-small"><%= jogo.placar_visitante %></span>
                 </div>
               </div>
+              
+              <!-- Botão Assistir -->
               <a href="/player/<%= jogo.id %>" class="watch-btn-small">
                 <i class="fas fa-play"></i> Assistir
               </a>
             </div>
           <% }); %>
         </div>
-      
 
         <div style="text-align: center; margin-top: 1.5rem;">
           <a href="/home/" style="color: var(--accent-primary); font-size: 0.9rem; text-decoration: none;">
@@ -448,146 +630,147 @@
      data-qrcode="<%= qrCodeBase64 %>" 
      style="display: none;">
 </div>
-
+  <script src="/js/pix-copy.js"></script>
   <script src="/js/script.js"></script>
   <script src="/js/live.js"></script>
-  <script>
-    const iframe = document.getElementById('stream-iframe');
-    const buttons = document.querySelectorAll('.channel-btn');
+ 
+<script>
+ document.addEventListener('DOMContentLoaded', () => {
 
-    function aplicarSandboxPorIndex(index) {
+  const iframe = document.getElementById('stream-iframe');
+  const buttons = document.querySelectorAll('.channel-btn');
+
+  function aplicarSandboxPorIndex(index) {
+    if (iframe) {
       if (index <= 3) {
         iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin');
       } else {
         iframe.removeAttribute('sandbox');
       }
     }
+  }
 
-    buttons.forEach(button => {
-      button.addEventListener('click', () => {
-        const newUrl = button.getAttribute('data-channel');
-        const index = parseInt(button.getAttribute('data-index-original'), 10);
+  buttons.forEach(button => {
+    button.addEventListener('click', () => {
+      const newUrl = button.getAttribute('data-channel');
+      const index = parseInt(button.getAttribute('data-index-original'), 10);
 
-        if (iframe && newUrl) {
-          iframe.src = newUrl;
-          aplicarSandboxPorIndex(index);
-        }
+      if (iframe && newUrl) {
+        iframe.src = newUrl;
+        aplicarSandboxPorIndex(index);
+      }
 
-        // Remove 'active' de todos os botões
-        buttons.forEach(btn => btn.classList.remove('active'));
-
-        // Adiciona 'active' ao botão clicado
-        button.classList.add('active');
-      });
+      buttons.forEach(btn => btn.classList.remove('active'));
+      button.classList.add('active');
     });
+  });
 
-    // ✅ Aplicar o sandbox corretamente no carregamento inicial
-    const botaoAtivo = document.querySelector('.channel-btn.active');
-    if (botaoAtivo) {
-      const indexInicial = parseInt(botaoAtivo.getAttribute('data-index-original'), 10);
-      aplicarSandboxPorIndex(indexInicial);
-    }
+  // Aplicar sandbox no botão ativo inicial
+  const botaoAtivo = document.querySelector('.channel-btn.active');
+  if (botaoAtivo) {
+    const indexInicial = parseInt(botaoAtivo.getAttribute('data-index-original'), 10);
+    aplicarSandboxPorIndex(indexInicial);
+  }
 
+  // Atualiza o timer simples de contagem regressiva
+  function updateSimpleTimer() {
+    const endTime = new Date('<%= tempoFim %>');
+    const now = new Date();
+    let remaining = Math.max(0, endTime - now);
 
+    const elMins = document.getElementById('simple-minutes');
+    const elSecs = document.getElementById('simple-seconds');
 
-    function updateSimpleTimer() {
-      const endTime = new Date('<%= tempoFim %>');
-      const now = new Date();
-      let remaining = Math.max(0, endTime - now);
-    
+    if (elMins && elSecs) {
       const mins = Math.floor(remaining / 60000);
       const secs = Math.floor((remaining % 60000) / 1000);
-    
-      document.getElementById('simple-minutes').textContent = mins.toString().padStart(2, '0');
-      document.getElementById('simple-seconds').textContent = secs.toString().padStart(2, '0');
-    
-      if (remaining > 0) {
-        setTimeout(updateSimpleTimer, 1000);
-      }
+
+      elMins.textContent = mins.toString().padStart(2, '0');
+      elSecs.textContent = secs.toString().padStart(2, '0');
     }
-    
-    updateSimpleTimer();
-     // Função para fazer requisição Ajax e atualizar os dados
-  function atualizarJogos() {
-    fetch('/atualizar-jogos') // Rota para pegar os dados atualizados
-      .then(response => response.json())
-      .then(data => {
-        // Limpar a lista de jogos
-        const gamesList = document.getElementById("games-list");
-        gamesList.innerHTML = '';
 
-        // Atualizar a lista com os jogos novos
-        data.jogos.forEach(jogo => {
-          const gameElement = document.createElement('div');
-          gameElement.classList.add('live-game-card');
-          gameElement.innerHTML = `
-            <div class="game-status ${jogo.status === 'ao-vivo' ? 'live' : ''}">
-              AO VIVO - ${jogo.tempo}
+    if (remaining > 0) {
+      setTimeout(updateSimpleTimer, 1000);
+    }
+  }
+  updateSimpleTimer();
+
+  // Atualizar lista de jogos ao vivo via AJAX
+  async function atualizarJogos() {
+    try {
+      const response = await fetch('/atualizar-jogos');
+      if (!response.ok) throw new Error('Erro na resposta da API');
+      const data = await response.json();
+
+      const gamesList = document.getElementById("games-list");
+      if (!gamesList) return;
+
+      gamesList.innerHTML = ''; // limpa lista
+
+      data.jogos.forEach(jogo => {
+        const gameElement = document.createElement('div');
+        gameElement.classList.add('live-game-card');
+        gameElement.innerHTML = `
+          <div class="game-status ${jogo.status === 'ao-vivo' ? 'live' : ''}">
+            AO VIVO - ${jogo.tempo}
+          </div>
+          <div class="game-teams-small">
+            <div class="team-small">
+              <img src="${jogo.time_casa_imagem}" alt="${jogo.time_casa_nome}" class="team-logo-small" />
+              <span>${jogo.time_casa_nome}</span>
             </div>
-            <div class="game-teams-small">
-              <div class="team-small">
-                <img src="${jogo.time_casa_imagem}" alt="${jogo.time_casa_nome}" class="team-logo-small">
-                <span>${jogo.time_casa_nome}</span>
-              </div>
-              <span class="vs-small">VS</span>
-              <div class="team-small" style="justify-content: flex-end;">
-                <span>${jogo.time_visitante_nome}</span>
-                <img src="${jogo.time_visitante_imagem}" alt="${jogo.time_visitante_nome}" class="team-logo-small">
-              </div>
+            <span class="vs-small">VS</span>
+            <div class="team-small" style="justify-content: flex-end;">
+              <span>${jogo.time_visitante_nome}</span>
+              <img src="${jogo.time_visitante_imagem}" alt="${jogo.time_visitante_nome}" class="team-logo-small" />
             </div>
-            <div class="game-score" style="text-align: center; margin-bottom: 0.75rem;">
-              ${jogo.placar_casa} - ${jogo.placar_visitante}
-            </div>
-            <a href="/player/${jogo.id}" class="watch-btn-small">
-              <i class="fas fa-play"></i> Assistir
-            </a>
-          `;
-          gamesList.appendChild(gameElement);
-        });
-      })
-      .catch(error => console.error('Erro ao atualizar jogos:', error));
+          </div>
+          <div class="game-score" style="text-align: center; margin-bottom: 0.75rem;">
+            ${jogo.placar_casa} - ${jogo.placar_visitante}
+          </div>
+          <a href="/player/${jogo.id}" class="watch-btn-small">
+            <i class="fas fa-play"></i> Assistir
+          </a>
+        `;
+        gamesList.appendChild(gameElement);
+      });
+    } catch (error) {
+      console.error('Erro ao atualizar jogos:', error);
+    }
+  }
+  setInterval(atualizarJogos, 60000); // atualiza a cada 1 min
+
+  const jogoId = "<%= jogo.id %>";
+
+  // Atualiza placar e tempo do jogo via fetch
+  async function atualizarPlacarETempo(jogoId) {
+    try {
+      const response = await fetch(`/atualizar-jogo/${jogoId}`);
+      if (!response.ok) throw new Error('Erro na resposta da API');
+      const data = await response.json();
+
+      const jogo = data.jogo;
+      const placar = document.getElementById(`placar-${jogoId}`);
+      const tempo = document.getElementById(`tempo-${jogoId}`);
+
+      if (placar) placar.textContent = `${jogo.placar_casa} - ${jogo.placar_visitante}`;
+      if (tempo) tempo.textContent = jogo.tempo;
+    } catch (error) {
+      console.error('Erro ao atualizar o placar e o tempo:', error);
+    }
   }
 
-  // Atualizar os jogos a cada 1 minuto (60000 milissegundos)
-  setInterval(atualizarJogos, 60000);
-
-
-  // Garantindo que o jogoId seja atribuído corretamente no JavaScript
-  // Atribuindo o ID do jogo no formato correto para JavaScript
-  const jogoId = "<%= jogo.id %>";  // Passando o ID como string, com aspas ao redor
-
-  // Função para atualizar o placar e o tempo do jogo
-  function atualizarPlacarETempo(jogoId) {
-    // Faz uma requisição para o backend para buscar os dados atualizados do jogo
-    fetch(`/atualizar-jogo/${jogoId}`)
-      .then(response => response.json())
-      .then(data => {
-        const jogo = data.jogo;
-
-        // Atualiza o placar
-        const placar = document.getElementById(`placar-${jogoId}`);
-        if (placar) {
-          placar.textContent = `${jogo.placar_casa} - ${jogo.placar_visitante}`;
-        }
-
-        // Atualiza o tempo
-        const tempo = document.getElementById(`tempo-${jogoId}`);
-        if (tempo) {
-          tempo.textContent = jogo.tempo;
-        }
-      })
-      .catch(error => console.error('Erro ao atualizar o placar e o tempo:', error));
-  }
-
-  // Função para iniciar a atualização do placar e do tempo a cada 1 minuto (60000 milissegundos)
+  // Inicia atualização periódica do placar e tempo
   function iniciarAtualizacao(jogoId) {
     setInterval(() => {
-      atualizarPlacarETempo(jogoId);  // Atualiza o placar e o tempo do jogo com o ID fornecido
-    }, 60000);  // Atualiza a cada 1 minuto
+      atualizarPlacarETempo(jogoId);
+    }, 60000);
   }
+  iniciarAtualizacao(jogoId);
 
-  // Inicia a atualização do jogo com o ID correspondente
-  iniciarAtualizacao(jogoId);  // Chama a função para iniciar a atualização a cada 1 minuto
-  </script>
+});
+
+</script>
+
 </body>
 </html>

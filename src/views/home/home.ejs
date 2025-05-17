@@ -45,16 +45,119 @@
   font-size: 0.8rem;
 }
 
+  /* Container PIX */
+.pix-mobile-container {
+  display: none;
+  background: #1e2b38;
+  border-radius: 8px;
+  margin: 10px 0;
+  padding: 12px;
+}
+
+/* Código PIX */
+.pix-code {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(0,0,0,0.2);
+  padding: 10px;
+  border-radius: 6px;
+}
+
+.pix-code span {
+  font-family: monospace;
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-grow: 1;
+}
+
+.pix-code button {
+  background: #00e676;
+  border: none;
+  color: #000;
+  padding: 6px 10px;
+  border-radius: 4px;
+  margin-left: 10px;
+  cursor: pointer;
+}
+
+#pix-modal {
+    /* Posicionamento */
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    
+    /* Estilo visual */
+    background: #00e676;
+    color: #000;
+    padding: 12px 24px;
+    border-radius: 30px;
+    font-weight: bold;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    
+    /* Camada */
+    z-index: 9999;
+    
+    /* Estado inicial */
+    display: none;
+    opacity: 0;
+    
+    /* Transição */
+    transition: opacity 0.3s ease;
+}
+
+/* Classe para mostrar */
+#pix-modal.show {
+  display: block;
+  opacity: 1;
+  transform: translateX(-50%) translateY(-10px);
+}
+
+
+  /* Responsividade */
+  @media (max-width: 992px) {
+    .player-container {
+      grid-template-columns: 1fr;
+    }
+    
+    .live-games-sidebar {
+      margin-top: 2rem;
+    }
+    .pix-mobile-container {
+    display: block;
+  }
+  }
+
 @keyframes pulse {
-  0% { opacity: 1; }
-  50% { opacity: 0.7; }
-  100% { opacity: 1; }
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+  }
+
+@keyframes fadeInOut {
+  0% { opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { opacity: 0; display: none; }
 }
   </style>
   <%- include('../partials/header', {isAuthenticated: !!user}) %>
   <%- include('../partials/navigation', {qrCodeBase64: qrCodeBase64}) %>
   
   <main>
+            <div class="pix-mobile-container">
+          <div class="pix-code">
+            <span id="pix-key"><%= paymentPixPayload %></span>
+            <button id="copy-pix-btn">
+              <i class="fas fa-copy"></i>
+            </button>
+          </div>
+        </div>
+
+      <div id="pix-modal" class="pix-modal">Chave PIX copiada!</div>
     <h1 class="page-title">Jogos ao Vivo</h1>
     <div class="games-grid">
 
@@ -143,6 +246,7 @@
   </main>
   <%- include('../partials/footer') %>
   <script src="/js/script.js"></script>
+  <script src="/js/pix-copy.js"></script>
   <script>
         function updateSimpleTimer() {
       const endTime = new Date('<%= tempoFim %>');

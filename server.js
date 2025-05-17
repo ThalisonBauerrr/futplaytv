@@ -119,15 +119,13 @@ async function crons() {
     timezone: "America/Sao_Paulo"
   });
 
-  // Cron para rodar todos os dias às 00:00
-  cron.schedule('0 0 * * *', async () => { // Rodando todos os dias às 00:00
-    console.log('🌙 Executando rotina diária às 00:00...');
+  cron.schedule('0 * * * *', async () => { // Rodando a cada 1 hora no minuto 0cls
+    console.log('🕒 Executando rotina a cada 1 hora...');
     await getGradejogos();
   }, {
     timezone: "America/Sao_Paulo"
   });
 
-  // Chama a rotina de inicialização ao iniciar o servidor
   await getGradejogos();
 }
 

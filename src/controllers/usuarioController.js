@@ -1,5 +1,3 @@
-const bcrypt = require('bcrypt');
-const usuariosCadastradosModel = require('../models/usuariosCadastradosModel');
 const usuarioModel = require('../models/usuarioModel');
 const { v4: uuidv4 } = require('uuid');
 

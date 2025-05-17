@@ -20,7 +20,7 @@ class usuarioModel {
       connection = await this.getConnection();
       await connection.beginTransaction();
       const [rows] = await connection.query(
-        "SELECT tempo_inicio, tempo_fim, idpayment, payment_qr_code FROM usuarios WHERE uuid = ? FOR UPDATE", 
+        "SELECT tempo_inicio, tempo_fim, idpayment, payment_qr_code,payment_status,purchase FROM usuarios WHERE uuid = ? FOR UPDATE", 
         [uuid]
       );
       await connection.commit(); // Libera o lock após a verificação
@@ -172,22 +172,24 @@ class usuarioModel {
     }
   }
   // Atualizar dados de pagamento
-  static async atualizarDadosPagamento(uuid, paymentId, qrCode) {
-    let connection;
-    try {
-      connection = await this.getConnection();
-      const [result] = await connection.query(
-        `UPDATE usuarios SET idpayment = ?, payment_qr_code = ?, tempo_inicio = NOW(), tempo_fim = DATE_ADD(NOW(), INTERVAL ? MINUTE) WHERE uuid = ?`,
-        [paymentId, qrCode, process.env.MINUTES_FREE || 10, uuid]
-      );
-      return result.affectedRows > 0;
-    } catch (err) {
-      console.error('Erro ao atualizar dados de pagamento:', err);
-      throw err;
-    } finally {
-      if (connection) await connection.release();
-    }
+static async atualizarDadosPagamento(uuid, paymentId, qrCode, payloadPix) {
+  let connection;
+  try {
+    connection = await this.getConnection();
+    const [result] = await connection.query(
+      `UPDATE usuarios 
+       SET idpayment = ?, payment_qr_code = ?, payment_pix_payload = ?, tempo_inicio = NOW(), tempo_fim = DATE_ADD(NOW(), INTERVAL ? MINUTE) 
+       WHERE uuid = ?`,
+      [paymentId, qrCode, payloadPix, process.env.MINUTES_FREE || 10, uuid]
+    );
+    return result.affectedRows > 0;
+  } catch (err) {
+    console.error('Erro ao atualizar dados de pagamento:', err);
+    throw err;
+  } finally {
+    if (connection) await connection.release();
   }
+}
   // Buscar dados completos do usuário
   static async getDadosCompletos(uuid) {
     let connection;
@@ -199,6 +201,7 @@ class usuarioModel {
           payment_status,
           purchase, 
           payment_qr_code,
+          payment_pix_payload,
           tempo_inicio,
           tempo_fim, 
           updated_at FROM usuarios WHERE uuid = ?`,

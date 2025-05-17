@@ -32,14 +32,18 @@ exports.resPlayer = async (req, res) => {
     }
 
     // 4. Gerenciar QR Code (MESMA função da Home)
-    const qrCodeBase64 = await gerenciarQRCode(uuidUsuario, usuario, inserted);
+   const { paymentQrCode, paymentPixPayload } = await gerenciarQRCode(uuidUsuario, usuario, inserted);
 
     // 5. Calcular tempo restante
     const tempoRestante = calcularTempoRestante(usuario.tempo_fim);
 
     // 6. Buscar dados adicionais
-    const resultado = await jogoModel.verificarCanais(jogo.transmissoes, jogoId);
-    const jogosAoVivo = await jogoModel.buscarJogosAoVivo();
+      let resultado = await jogoModel.verificarCanais(jogo.transmissoes, jogoId);
+      const jogosAoVivo = await jogoModel.buscarJogosAoVivo();
+
+      if (tempoRestante.expirado === true) {
+        resultado = "expirado";  // OK
+      }
 
     // 7. Renderizar página
     res.render('home/player', {
@@ -51,7 +55,8 @@ exports.resPlayer = async (req, res) => {
       tempoRestante: tempoRestante.texto,
       tempoExpirado: tempoRestante.expirado,
       tempoFim: usuario.tempo_fim,
-      qrCodeBase64: qrCodeBase64
+      qrCodeBase64: paymentQrCode,
+      paymentPixPayload: paymentPixPayload  // adiciona o payload do PIX aqui
     });
 
   } catch (error) {
@@ -96,34 +101,39 @@ async function gerenciarQRCode(uuidUsuario, usuario, inserted) {
     // Normaliza as duas datas, zerando hora, minuto e segundo
     const tempoFimDate = new Date(tempoFim.getFullYear(), tempoFim.getMonth(), tempoFim.getDate());
     const hojeDate = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
+    
+    // Declare qrCodeBase64 e paymentId uma vez para evitar redeclaração
+    let qrCodeBase64, paymentId, payloadPix;
 
     // 1. Se o tempo de fim for menor que hoje, adiciona tempo
     if (tempoFimDate < hojeDate) {
       console.log('O tempo_fim é menor que hoje. Adicionando tempo...');
       await usuarioModel.atualizarTempoAcesso(uuidUsuario, process.env.MINUTES_FREE);
-      return usuario.payment_qr_code;
+      return {
+          paymentQrCode: usuario.payment_qr_code,
+          paymentPixPayload: usuario.payment_pix_payload
+        };
     }
 
-    // Declare qrCodeBase64 e paymentId uma vez para evitar redeclaração
-    let qrCodeBase64, paymentId;
+   
 
     // 2. Verificar o status de pagamento e realizar ações conforme o status
     switch (statusPagamento) {
       case 'num':
         // Se não houver pagamento, cria um novo QR Code
-        ({ qrCodeBase64, paymentId } = await criarPagamentoQR(uuidUsuario, 1.50));
+        ({ qrCodeBase64, paymentId, payloadPix } = await criarPagamentoQR(uuidUsuario, 1.50));
 
-        await usuarioModel.atualizarDadosPagamento(
-          uuidUsuario,
-          paymentId,
-          qrCodeBase64,
-          process.env.MINUTES_FREE || 10
-        );
+          await usuarioModel.atualizarDadosPagamento(
+            uuidUsuario,
+            paymentId,
+            qrCodeBase64,
+            payloadPix,
+            process.env.MINUTES_FREE || 10
+          );
         break;
 
       case 'approved':
         console.log('Pagamento aprovado');
-
         if (usuario.purchase === '0' && usuario.payment_status === 'approved') {
           // Atualiza status de pagamento para 'approved'
           const updatePaymentStatus = await usuarioModel.atualizarStatusPagamento(uuidUsuario, 'approved');
@@ -143,14 +153,15 @@ async function gerenciarQRCode(uuidUsuario, usuario, inserted) {
           if (sucesso) {
             console.log(`[${uuidUsuario}] Campos resetados com sucesso: QR Code, status de pagamento e purchase.`);
             // Cria um novo QR Code
-            ({ qrCodeBase64, paymentId } = await criarPagamentoQR(uuidUsuario, 1.50));
+            ({ qrCodeBase64, paymentId, payloadPix } = await criarPagamentoQR(uuidUsuario, 1.50));
 
-            await usuarioModel.atualizarDadosPagamento(
-              uuidUsuario,
-              paymentId,
-              qrCodeBase64,
-              process.env.MINUTES_FREE || 10
-            );
+          await usuarioModel.atualizarDadosPagamento(
+            uuidUsuario,
+            paymentId,
+            qrCodeBase64,
+            payloadPix,
+            process.env.MINUTES_FREE || 10
+          );
           } else {
             console.log(`[${uuidUsuario}] Nenhum campo foi resetado. Verifique os dados.`);
           }
@@ -165,23 +176,26 @@ async function gerenciarQRCode(uuidUsuario, usuario, inserted) {
           console.log(sucesso ? 'Tempo adicionado.' : `[${uuidUsuario}] Nenhum campo foi resetado. Verifique os dados.`);
           resultado = await usuarioModel.getDadosCompletos(uuidUsuario)
           qrCodeBase64 = resultado.payment_qr_code
+          payloadPix = resultado.payment_pix_payload
           
         } else {
           console.log('Pagamento pendente, mas já ganhou os 12 minutos diários!');
           resultado = await usuarioModel.getDadosCompletos(uuidUsuario)
           qrCodeBase64 = resultado.payment_qr_code
+          payloadPix = resultado.payment_pix_payload
         }
         break;
 
       case 'cancelled':
         console.log('Pagamento cancelado');
-        ({ qrCodeBase64, paymentId } = await criarPagamentoQR(uuidUsuario, 1.50));
-        await usuarioModel.atualizarDadosPagamento(
-          uuidUsuario,
-          paymentId,
-          qrCodeBase64,
-          process.env.MINUTES_FREE || 10
-        );
+        ({ qrCodeBase64, paymentId, payloadPix } = await criarPagamentoQR(uuidUsuario, 1.50));
+          await usuarioModel.atualizarDadosPagamento(
+            uuidUsuario,
+            paymentId,
+            qrCodeBase64,
+            payloadPix,
+            process.env.MINUTES_FREE || 10
+          );
         break;
       
       case 'in_process':
@@ -204,10 +218,14 @@ async function gerenciarQRCode(uuidUsuario, usuario, inserted) {
         console.log(`Status desconhecido do pagamento: ${statusPagamento}`);
     }
 
-    return qrCodeBase64;
+    return {
+      paymentQrCode: qrCodeBase64,
+      paymentPixPayload: payloadPix
+    };
 
   } catch (error) {
     console.error('Erro no gerenciamento do QR Code:', error);
     return null;
   }
 }
+
