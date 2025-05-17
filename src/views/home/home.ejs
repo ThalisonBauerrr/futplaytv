@@ -131,12 +131,24 @@
   }
   }
 
+/* Sua animação pulse original (mantida) */
 @keyframes pulse {
     0% { opacity: 1; }
     50% { opacity: 0.5; }
     100% { opacity: 1; }
-  }
+}
 
+/* Nova animação específica para o timer */
+@keyframes timer-pulse {
+    0% { 
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(255, 85, 85, 0.7);
+    }
+    100% { 
+        transform: scale(1.05);
+        box-shadow: 0 0 0 6px rgba(255, 85, 85, 0);
+    }
+}
 @keyframes fadeInOut {
   0% { opacity: 0; }
   10% { opacity: 1; }
@@ -148,16 +160,116 @@
   <%- include('../partials/navigation', {qrCodeBase64: qrCodeBase64}) %>
   
   <main>
-            <div class="pix-mobile-container">
-          <div class="pix-code">
-            <span id="pix-key"><%= paymentPixPayload %></span>
-            <button id="copy-pix-btn">
-              <i class="fas fa-copy"></i>
-            </button>
-          </div>
-        </div>
+    <div class="pix-mobile-container" style="
+      background: #1a1a24;
+      border-radius: 12px;
+      padding: 16px;
+      margin: 16px 0;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      border-left: 4px solid #00e676;
+    ">
 
-      <div id="pix-modal" class="pix-modal">Chave PIX copiada!</div>
+      <!-- Header with countdown -->
+      <div class="donation-header" style="
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+      ">
+        <p style="
+          color: #fff;
+          font-weight: 600;
+          font-size: 1rem;
+          margin: 0;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        ">
+          <i class="fas fa-exclamation-circle" style="color: #ff5555;"></i>
+          <span>Doação necessária para continuar</span>
+        </p>
+        <div class="simple-timer" style="
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          font-size: 1.1rem;
+          color: #fff;
+          background: rgba(255,85,85,0.15);
+          padding: 6px 10px;
+          border-radius: 20px;
+        ">
+          <div class="timer-min" id="simple-minutes" style="
+            font-family: 'Courier New', monospace;
+            font-weight: 700;
+            min-width: 20px;
+            text-align: center;
+          ">00</div>
+          <div>:</div>
+          <div class="timer-sec" id="simple-seconds" style="
+            font-family: 'Courier New', monospace;
+            font-weight: 700;
+            min-width: 20px;
+            text-align: center;
+          ">00</div>
+        </div>
+      </div>
+
+      <!-- PIX Code -->
+      <div class="pix-code" style="
+        display: flex;
+        align-items: center;
+        background: rgba(0,0,0,0.25);
+        padding: 12px;
+        border-radius: 8px;
+        border: 1px solid rgba(255,255,255,0.1);
+      ">
+        <span id="pix-key" style="
+          font-family: 'Courier New', monospace;
+          font-size: 0.9rem;
+          color: #fff;
+          flex-grow: 1;
+          word-break: break-all;
+          line-height: 1.4;
+        ">
+          <%= paymentPixPayload %>
+        </span>
+        <button id="copy-pix-btn" aria-label="Copiar chave PIX" style="
+          margin-left: 12px;
+          background: #00e676;
+          border: none;
+          color: #000;
+          padding: 8px 12px;
+          border-radius: 6px;
+          cursor: pointer;
+          font-weight: 600;
+          font-size: 0.9rem;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          transition: all 0.2s ease;
+        ">
+
+          <i class="fas fa-copy"></i>
+          <span>Copiar</span>
+        </button>
+      </div>
+
+      <!-- Footer note -->
+      <p style="
+        color: rgba(255,255,255,0.7);
+        font-size: 0.8rem;
+        margin: 8px 0 0;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      ">
+        <i class="fas fa-heart" style="color: #ff5555;"></i>
+        <span>Sua contribuição mantém o projeto vivo!</span>
+      </p>
+    </div>
+
+    <div id="pix-modal" class="pix-modal">Chave PIX copiada!</div>
+
     <h1 class="page-title">Jogos ao Vivo</h1>
     <div class="games-grid">
 
@@ -248,23 +360,65 @@
   <script src="/js/script.js"></script>
   <script src="/js/pix-copy.js"></script>
   <script>
-        function updateSimpleTimer() {
+  function updateSimpleTimer() {
       const endTime = new Date('<%= tempoFim %>');
       const now = new Date();
-      let remaining = Math.max(0, endTime - now);
-    
+      const remaining = Math.max(0, endTime - now);
+      
       const mins = Math.floor(remaining / 60000);
       const secs = Math.floor((remaining % 60000) / 1000);
-    
-      document.getElementById('simple-minutes').textContent = mins.toString().padStart(2, '0');
-      document.getElementById('simple-seconds').textContent = secs.toString().padStart(2, '0');
-    
+
+      // Atualiza todos os elementos do timer
+      document.querySelectorAll('.timer-min').forEach(el => {
+          el.textContent = mins.toString().padStart(2, '0');
+      });
+      
+      document.querySelectorAll('.timer-sec').forEach(el => {
+          el.textContent = secs.toString().padStart(2, '0');
+      });
+
+      // Aplica efeitos visuais
+      document.querySelectorAll('.timer-container').forEach(container => {
+          // Reset dos estilos primeiro
+          container.style.animation = '';
+          container.style.backgroundColor = '';
+          
+          // Efeitos quando o tempo está acabando
+          if (mins < 5) {
+              container.style.backgroundColor = 'rgba(255, 85, 85, 0.2)';
+              
+              if (mins === 0 && secs <= 30) {
+                  container.style.animation = 'timer-pulse 0.75s infinite ease-out';
+              }
+          }
+          
+          // Quando o tempo acabar
+          if (remaining <= 0) {
+              container.innerHTML = `
+                  <span style="color:#fff;font-weight:700;animation:pulse 1s infinite;">
+                      TEMPO ESGOTADO!
+                  </span>
+              `;
+          }
+      });
+
       if (remaining > 0) {
-        setTimeout(updateSimpleTimer, 1000);
+          setTimeout(updateSimpleTimer, 1000);
       }
-    }
-    
-    updateSimpleTimer();
+  }
+
+  // Inicialização robusta
+  function initTimer() {
+      if (document.readyState !== 'loading') {
+          updateSimpleTimer();
+      } else {
+          document.addEventListener('DOMContentLoaded', updateSimpleTimer);
+      }
+      // Fallback após 500ms
+      setTimeout(updateSimpleTimer, 500);
+  }
+
+  initTimer();
   </script>
 </body>
 </html>
