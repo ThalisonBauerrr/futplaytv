@@ -1,19 +1,35 @@
 document.addEventListener('DOMContentLoaded', () => {
-  const iframe = document.getElementById('stream-iframe');
+  let iframe = document.getElementById('stream-iframe'); // variável atualizada depois da troca
   const buttons = document.querySelectorAll('.channel-btn:not(.dropdown-toggle)');
   const dropdownItems = document.querySelectorAll('.dropdown-item');
   const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
 
-  function aplicarSandboxPorIndex(index) {
-    if (!iframe) return;
+  // Função para criar um novo iframe com sandbox conforme index
+  function criarIframe(url, index) {
+    const container = iframe.parentElement;
+    if (!container) return null;
+
+    // Remove iframe antigo
+    container.removeChild(iframe);
+
+    // Cria novo iframe
+    const novoIframe = document.createElement('iframe');
+    novoIframe.id = 'stream-iframe';
+    novoIframe.src = url;
+    novoIframe.allowFullscreen = true;
+    novoIframe.frameBorder = 0;
+    novoIframe.referrerPolicy = 'strict-origin-when-cross-origin';
+    novoIframe.allow = 'encrypted-media;autoplay';
+
     if (index <= 3) {
-      iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin');
-    } else {
-      iframe.removeAttribute('sandbox');
+      novoIframe.setAttribute('sandbox', 'allow-scripts allow-same-origin');
     }
+
+    container.appendChild(novoIframe);
+    return novoIframe;
   }
 
-  // Função para checar se algum stream tem index entre 4 e 6
+  // Função para checar se algum stream tem index entre 4 e 6 (publicidade)
   function hasAdImage(streams) {
     return streams.some(stream => stream.index >= 4 && stream.index <= 6);
   }
@@ -49,14 +65,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // Clique nos botões principais
   buttons.forEach(button => {
     button.addEventListener('click', () => {
       const newUrl = button.getAttribute('data-channel');
       const index = parseInt(button.getAttribute('data-index-original'), 10);
 
       if (iframe && newUrl) {
-        iframe.src = newUrl;
-        aplicarSandboxPorIndex(index);
+        iframe = criarIframe(newUrl, index);
       }
 
       buttons.forEach(btn => btn.classList.remove('active'));
@@ -70,17 +86,17 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  // Clique nos itens do dropdown
   dropdownItems.forEach(item => {
     item.addEventListener('click', (e) => {
-      e.stopPropagation(); // Impede o clique de fechar imediatamente o dropdown
+      e.stopPropagation(); // Impede fechar imediatamente o dropdown
 
       const newUrl = item.getAttribute('data-channel');
       const index = parseInt(item.getAttribute('data-index-original'), 10);
       const varName = item.textContent.trim();
 
       if (iframe && newUrl) {
-        iframe.src = newUrl;
-        aplicarSandboxPorIndex(index);
+        iframe = criarIframe(newUrl, index);
       }
 
       buttons.forEach(btn => btn.classList.remove('active'));
@@ -146,15 +162,29 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Ao carregar a página, aplicar sandbox ao canal ativo inicial e atualizar texto do botão dropdown
+  // Ao carregar a página, atualizar sandbox e texto do dropdown conforme canal ativo inicial
   const activeButton = document.querySelector('.channel-btn.active');
   const activeDropdownItem = document.querySelector('.dropdown-item.active');
   if (activeButton) {
     const idx = parseInt(activeButton.getAttribute('data-index-original'), 10);
-    aplicarSandboxPorIndex(idx);
+    // Só precisa recriar o iframe se quiser garantir sandbox no início,
+    // mas já está criado no HTML, então só garantir sandbox:
+    if (iframe) {
+      if (idx <= 3) {
+        iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin');
+      } else {
+        iframe.removeAttribute('sandbox');
+      }
+    }
   } else if (activeDropdownItem) {
     const idx = parseInt(activeDropdownItem.getAttribute('data-index-original'), 10);
-    aplicarSandboxPorIndex(idx);
+    if (iframe) {
+      if (idx <= 3) {
+        iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin');
+      } else {
+        iframe.removeAttribute('sandbox');
+      }
+    }
 
     // Atualiza o texto e imagem do botão dropdown para o item ativo
     const dropdownToggle = activeDropdownItem.closest('.dropdown-menu')?.previousElementSibling;

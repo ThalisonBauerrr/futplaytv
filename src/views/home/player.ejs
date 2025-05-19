@@ -331,7 +331,22 @@
   outline: none;
   cursor: pointer;
 }
+.channel-dropdown .dropdown-toggle.active,
+.channel-dropdown .dropdown-toggle.active:hover {
+  background-color: #00e676 !important;
+  color: #000 !important;
+}
+.channel-btn.active,
+.dropdown-item.active {
+  background-color: #00e676 !important;
+  color: #000 !important; /* texto preto para contraste */
+}
 
+.channel-btn.active:hover,
+.dropdown-item.active:hover {
+  background-color: #00c85a !important; /* tom um pouco mais escuro no hover */
+  color: #000 !important;
+}
   /* Responsividade */
   @media (max-width: 992px) {
     .player-container {
@@ -611,90 +626,124 @@
 
         <div style="margin-top: 20px;">
           <% if (canais !== "expirado" && canais && canais.length > 0) { %>
-            <div class="channel-buttons">
-
-              <% 
+          <div class="channel-buttons">
+            <% 
               // Agrupar canais por nome
               const grouped = {};
               canais.forEach(canal => {
                 if (!grouped[canal.name]) grouped[canal.name] = [];
                 grouped[canal.name].push(canal);
               });
-              %>
 
-              <% Object.keys(grouped).forEach(name => { 
-                  const canaisGrupo = grouped[name];
-              %>
+              // Função para contar URLs válidas de um canal
+              function countValidUrls(canal) {
+                return canal.urls.filter(u => u.url && u.url.trim() !== '').length;
+              }
+            %>
 
-                <% if (canaisGrupo.length === 1) { 
-                  // Apenas 1 canal, mostrar botão normal para cada url 
-                  const canal = canaisGrupo[0];
-                  canal.urls.forEach(stream => {
-                    const isAtivo = stream.url === urlInicial;
-                    const showAdImage = stream.index >= 4 && stream.index <= 6;
-                %>
-                  <button
-                    class="channel-btn <%= isAtivo ? 'active' : '' %>"
-                    data-channel="<%= stream.url %>"
-                    data-index-original="<%= stream.index %>"
-                  >
-                    <i class="fas fa-satellite-dish"></i>
-                    <%= canal.name %>
-                    <% if (stream.index > 0) { %>
-                      <span> Alternativo <%= stream.index %></span>
-                    <% } %>
-                    <% if (showAdImage) { %>
-                      <img
-                        src="/assets/ads40.png"
-                        alt="Publicidade"
-                        class="ad-image"
-                        style="width: 30px; height: 30px; margin-left: 10px;"
-                      />
-                    <% } %>
+            <% Object.keys(grouped).forEach(name => { 
+                const canaisGrupo = grouped[name];
+
+                // Mostrar dropdown se:
+                // - Mais de 1 canal com o mesmo nome
+                // - OU um único canal com mais de uma URL válida
+                const usarDropdown = (canaisGrupo.length > 1) || (canaisGrupo.length === 1 && countValidUrls(canaisGrupo[0]) > 1);
+            %>
+
+              <% if (usarDropdown) { %>
+                <div class="channel-dropdown" style="position: relative;">
+                  <button id="dropdown-toggle-<%= name.replace(/\s+/g, '-') %>" class="channel-btn dropdown-toggle" type="button">
+                    <i class="fas fa-satellite-dish"></i> <%= canaisGrupo[0]?.name_variacoes || name %> <i class="fas fa-caret-down"></i>
                   </button>
-                <%   }); %>
-                
-                <% } else { 
-                  // Mais de 1 canal no grupo, criar dropdown
-                  // Como cada canal tem urls, vamos considerar só o primeiro url (index 0 ou 4)
-                  const firstCanal = canaisGrupo[0];
-                  const firstStream = firstCanal.urls.find(u => u.index === 0) || firstCanal.urls.find(u => u.index === 4);
-                %>
-                  <div class="channel-dropdown">
-                    <button id="dropdown-toggle-<%= name.replace(/\s+/g, '-') %>" class="channel-btn dropdown-toggle" type="button">
-                      <i class="fas fa-satellite-dish"></i> <%= canaisGrupo[0]?.name_variacoes || name %> <i class="fas fa-caret-down"></i>
-                    </button>
-                    <div class="dropdown-menu" style="display: none; position: absolute; background: #222; border-radius: 4px; margin-top: 5px; min-width: 200px; z-index: 10;">
-                      <% canaisGrupo.forEach(canal => {
+                  <div class="dropdown-menu" style="display: none; position: absolute; background: #222; border-radius: 4px; margin-top: 5px; min-width: 200px; z-index: 10;">
+                    <% if (canaisGrupo.length > 1) { 
+                        // Mais de um canal: listar só a URL principal de cada
+                        canaisGrupo.forEach(canal => {
                           const stream = canal.urls.find(u => u.index === 0) || canal.urls.find(u => u.index === 4);
-                          if (!stream) return;
+                          if (!stream || !stream.url) return;
                           const isAtivo = stream.url === urlInicial;
                           const showAdImage = stream.index >= 4 && stream.index <= 6;
-                      %>
+                    %>
                       <button 
                         class="dropdown-item <%= isAtivo ? 'active' : '' %>"
                         data-channel="<%= stream.url %>"
                         data-index-original="<%= stream.index %>"
                         style="width: 100%; padding: 8px 12px; background: none; border: none; color: white; text-align: left; cursor: pointer; display: flex; justify-content: space-between; align-items: center;"
                       >
-                        <span><%= canal.name_variacoes %></span>
+                        <span><%= canal.name_variacoes || canal.name %></span>
                         <% if (showAdImage) { %>
                           <img
                             src="/assets/ads40.png"
                             alt="Publicidade"
-                            class="ad-image <%= isAtivo ? 'active-ad' : '' %>"
+                            class="ad-image"
                             style="width: 20px; height: 20px; margin-left: 10px;"
                           />
                         <% } %>
                       </button>
-                      <% }); %>
-                    </div>
+                    <% 
+                        });
+                      } else { 
+                        // Apenas um canal com várias URLs válidas: listar todas
+                        canaisGrupo[0].urls.forEach(stream => {
+                          if (!stream.url || stream.url.trim() === '') return;
+                          const isAtivo = stream.url === urlInicial;
+                          const showAdImage = stream.index >= 4 && stream.index <= 6;
+                    %>
+                      <button 
+                        class="dropdown-item <%= isAtivo ? 'active' : '' %>"
+                        data-channel="<%= stream.url %>"
+                        data-index-original="<%= stream.index %>"
+                        style="width: 100%; padding: 8px 12px; background: none; border: none; color: white; text-align: left; cursor: pointer; display: flex; justify-content: space-between; align-items: center;"
+                      >
+                        <span><%= canaisGrupo[0].name %> Alternativo <%= stream.index %></span>
+                        <% if (showAdImage) { %>
+                          <img
+                            src="/assets/ads40.png"
+                            alt="Publicidade"
+                            class="ad-image"
+                            style="width: 20px; height: 20px; margin-left: 10px;"
+                          />
+                        <% } %>
+                      </button>
+                    <% 
+                        });
+                      }
+                    %>
                   </div>
-                <% } %>
+                </div>
+              <% } else { 
+                // Apenas um canal com uma URL: botão simples
+                const canal = canaisGrupo[0];
+                canal.urls.forEach(stream => {
+                  if (!stream.url || stream.url.trim() === '') return;
+                  const isAtivo = stream.url === urlInicial;
+                  const showAdImage = stream.index >= 4 && stream.index <= 6;
+              %>
+                <button
+                  class="channel-btn <%= isAtivo ? 'active' : '' %>"
+                  data-channel="<%= stream.url %>"
+                  data-index-original="<%= stream.index %>"
+                >
+                  <i class="fas fa-satellite-dish"></i> <%= canal.name %>
+                  <% if (stream.index > 0) { %>
+                    <span> Alternativo <%= stream.index %></span>
+                  <% } %>
+                  <% if (showAdImage) { %>
+                    <img
+                      src="/assets/ads40.png"
+                      alt="Publicidade"
+                      class="ad-image"
+                      style="width: 30px; height: 30px; margin-left: 10px;"
+                    />
+                  <% } %>
+                </button>
+              <% 
+                });
+              } 
+            %>
 
-              <% }); %>
-
-            </div>
+            <% }); %>
+          </div>
           <% } else if (canais === "expirado") { %>
             <p style="text-align: center; color: white; margin-top: 10px;">
               Para continuar, por favor faça uma doação usando o QR code acima.

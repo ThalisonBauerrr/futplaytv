@@ -40,7 +40,7 @@ exports.resPlayer = async (req, res) => {
     // 6. Buscar dados adicionais
       let resultado = await jogoModel.verificarCanais(jogo.transmissoes, jogoId);
       const jogosAoVivo = await jogoModel.buscarJogosAoVivo();
-
+      //console.log(resultado)
       if (tempoRestante.expirado === true) {
         resultado = "expirado";  // OK
       }
