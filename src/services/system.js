@@ -2,8 +2,9 @@ const db = require('../../config/database');
 const { getjogos } = require('./getJogos');
 
 class RegistroDiarioService {
+  // Remove a criação da data no construtor
   constructor() {
-    this.hoje = this.getDataAtual();
+    // vazio ou você pode remover o construtor totalmente
   }
 
   getDataAtual() {
@@ -19,31 +20,33 @@ class RegistroDiarioService {
     ].join('-');
   }
 
-  // Alterado para usar db.query sem .promise(), pois já está usando mysql2/promise
   async verificarRegistroDoDia() {
+    const hoje = this.getDataAtual();  // chama aqui para pegar data atual toda vez
     const [rows] = await db.query(
       `SELECT id FROM \`system\` WHERE data = ?`, 
-      [this.hoje]
+      [hoje]
     );
     return rows.length > 0;  // Verifica se há registros
   }
 
-  // Alterado para usar db.query sem .promise()
   async criarRegistro() {
+    const hoje = this.getDataAtual();  // chama aqui para pegar data atual toda vez
     const [result] = await db.query(
       `INSERT INTO \`system\` (data) VALUES (?)`,
-      [this.hoje]
+      [hoje]
     );
     return result.insertId;  // Retorna o ID do registro inserido
   }
 
   async executarRotinaDiaria() {
     try {
+      const hoje = this.getDataAtual();  // chama aqui para pegar data atual toda vez
+
       const existeRegistro = await this.verificarRegistroDoDia();
       if (existeRegistro) {
         return { 
           status: 'skipped',
-          message: `⚠️  Registro para ${this.hoje} já existe`,
+          message: `⚠️  Registro para ${hoje} já existe`,
         };
       }
 
@@ -53,9 +56,9 @@ class RegistroDiarioService {
       return {
         status: 'success',
         registroId,
-        data: this.hoje,
+        data: hoje,
         jogos: resultadoJogos,
-        message: `✅  Registro do dia ${this.hoje} criado!`
+        message: `✅  Registro do dia ${hoje} criado!`
       };
 
     } catch (error) {
